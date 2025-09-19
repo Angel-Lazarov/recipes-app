@@ -4,4 +4,7 @@ dotenv.config();
 
 export const PORT = process.env.PORT || 3000;
 export const CATBOX_USERHASH = process.env.CATBOX_USERHASH;
-export const FRONTEND_URL = process.env.FRONTEND_URL; // URL на деплойнатия фронтенд
+
+// FRONTEND_URL: използва се URL на деплойнатия фронтенд, fallback към localhost
+export const FRONTEND_URL =
+  process.env.FRONTEND_URL || 'http://localhost:3001';
