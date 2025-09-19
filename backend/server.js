@@ -1,4 +1,3 @@
-// backend/server.js
 import express from 'express';
 import multer from 'multer';
 import fetch from 'node-fetch';
@@ -57,7 +56,6 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     const form = new FormData();
     form.append('reqtype', 'fileupload');
     if (CATBOX_USERHASH) form.append('userhash', CATBOX_USERHASH);
-    // поле fileToUpload приема buffer
     form.append('fileToUpload', req.file.buffer, {
       filename: req.file.originalname,
       contentType: req.file.mimetype
