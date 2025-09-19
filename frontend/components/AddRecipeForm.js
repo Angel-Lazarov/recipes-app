@@ -1,12 +1,26 @@
-// frontend/components/AddRecipeForm.js
 import { useState } from 'react';
 import { uploadImage, createRecipe } from '../utils/api';
 
 export default function AddRecipeForm({ onAdded }) {
   const [title, setTitle] = useState('');
   const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+
+  const handleFileChange = (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    if (!f.type.startsWith('image/')) {
+      setError('Only image files are allowed');
+      setFile(null);
+      setPreview('');
+      return;
+    }
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+    setError('');
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -22,6 +36,7 @@ export default function AddRecipeForm({ onAdded }) {
       onAdded(newRecipe);
       setTitle('');
       setFile(null);
+      setPreview('');
     } catch (err) {
       console.error(err);
       setError(err.message || 'Error');
@@ -39,8 +54,14 @@ export default function AddRecipeForm({ onAdded }) {
 
       <div style={{ marginTop: 8 }}>
         <label>Image (optional)</label><br />
-        <input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} />
+        <input type="file" accept="image/*" onChange={handleFileChange} />
       </div>
+
+      {preview && (
+        <div style={{ marginTop: 6 }}>
+          <img src={preview} alt="Preview" width={160} />
+        </div>
+      )}
 
       <div style={{ marginTop: 10 }}>
         <button type="submit" disabled={busy}>{busy ? 'Saving...' : 'Add Recipe'}</button>
