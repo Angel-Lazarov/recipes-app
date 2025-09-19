@@ -5,21 +5,23 @@ import FormData from 'form-data';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { PORT, ALLOWED_ORIGIN, CATBOX_USERHASH } from './config.js';
+
+import { PORT, CATBOX_USERHASH } from './config.js';
 
 const app = express();
 
-// Разрешаваме заявки само от фронтенда
-app.use(cors({ origin: ALLOWED_ORIGIN }));
+// CORS
+const allowedOrigin = "http://localhost:3000"; // смени с URL на фронтенда
+app.use(cors({ origin: allowedOrigin }));
 
-// Middleware за парсване на JSON заявки
+// JSON Middleware
 app.use(express.json());
 
-// Multer настройка за памет
+// Multer
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Ендпойнт за качване на изображения в Catbox
+// Upload endpoint
 app.post('/upload', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Не е избран файл!' });
 
@@ -37,9 +39,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
       body: formData
     });
 
-    if (!response.ok) {
-      throw new Error(`Catbox upload failed with status ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`Catbox upload failed with status ${response.status}`);
 
     const imageUrl = await response.text();
     console.log(`Image uploaded: ${imageUrl}`);
@@ -51,20 +51,20 @@ app.post('/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-// Анти-кеширане за всички .js файлове
+// Anti-cache .js files
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use((req, res, next) => {
-  if (req.url.endsWith('.js')) res.setHeader('Cache-Control', 'no-store');
+  if (req.url.endsWith(".js")) res.setHeader("Cache-Control", "no-store");
   next();
 });
 
-// Сервиране на статични файлове (ако има такива)
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files
+app.use(express.static(path.join(__dirname, "public")));
 
-// Тестов рут
+// Test route
 app.get('/', (req, res) => res.send('Server is running!'));
 
-// Стартиране на сървъра
+// Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
