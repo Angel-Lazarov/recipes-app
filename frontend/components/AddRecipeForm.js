@@ -1,12 +1,8 @@
-// frontend/components/AddRecipeForm.js
 import { useState } from 'react';
 import { uploadImage, createRecipe } from '../utils/api';
 
 export default function AddRecipeForm({ onAdded }) {
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('');
-  const [ingredients, setIngredients] = useState('');
-  const [steps, setSteps] = useState('');
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -21,21 +17,13 @@ export default function AddRecipeForm({ onAdded }) {
         const uploadRes = await uploadImage(file);
         imageUrl = uploadRes.url;
       }
+      const newRecipe = await createRecipe({ title, imageUrl });
 
-      const newRecipe = await createRecipe({
-        title,
-        category,
-        ingredients: ingredients.split(',').map(s => s.trim()),
-        steps,
-        imageUrl
-      });
-
-      onAdded(newRecipe);
+      if (typeof onAdded === 'function') {
+        onAdded(newRecipe);
+      }
 
       setTitle('');
-      setCategory('');
-      setIngredients('');
-      setSteps('');
       setFile(null);
     } catch (err) {
       console.error(err);
@@ -50,21 +38,6 @@ export default function AddRecipeForm({ onAdded }) {
       <div>
         <label>Title</label><br />
         <input value={title} onChange={e => setTitle(e.target.value)} required />
-      </div>
-
-      <div>
-        <label>Category</label><br />
-        <input value={category} onChange={e => setCategory(e.target.value)} required />
-      </div>
-
-      <div>
-        <label>Ingredients (comma separated)</label><br />
-        <input value={ingredients} onChange={e => setIngredients(e.target.value)} required />
-      </div>
-
-      <div>
-        <label>Steps</label><br />
-        <textarea value={steps} onChange={e => setSteps(e.target.value)} required />
       </div>
 
       <div style={{ marginTop: 8 }}>
