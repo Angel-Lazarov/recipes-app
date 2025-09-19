@@ -1,5 +1,7 @@
+// backend/config.js
 import dotenv from 'dotenv';
-dotenv.config({ path: '../.env' }); // <- указваме път до root .env
+dotenv.config({ path: '../.env' }); // ако използваш root .env при локално тест (Render ще ползва свои env)
 
 export const PORT = process.env.PORT || 3000;
-export const CATBOX_USERHASH = process.env.CATBOX_USERHASH;
+export const CATBOX_USERHASH = process.env.CATBOX_USERHASH || '';
+export const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';

@@ -1,30 +1,53 @@
-import { useEffect, useState } from "react";
-import { fetchRecipes, createRecipe } from "../utils/api";
-import UploadImage from "../components/UploadImage";
+// frontend/pages/index.js
+import { useEffect, useState } from 'react';
+import { fetchRecipes, deleteRecipe } from '../utils/api';
+import AddRecipeForm from '../components/AddRecipeForm';
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchRecipes().then(setRecipes);
+    fetchRecipes()
+      .then(data => setRecipes(data))
+      .catch(err => {
+        console.error(err);
+        setRecipes([]);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleUpload = (url) => {
-    const newRecipe = { title: "New Recipe", image: url };
-    createRecipe(newRecipe).then((r) => setRecipes((prev) => [...prev, newRecipe]));
+  const onAdded = (r) => setRecipes(prev => [...prev, r]);
+
+  const onDelete = async (id) => {
+    try {
+      await deleteRecipe(id);
+      setRecipes(prev => prev.filter(p => p.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert('Delete failed');
+    }
   };
 
   return (
-    <div>
+    <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
       <h1>Recipes</h1>
-      <UploadImage onUpload={handleUpload} />
-      <ul>
-        {recipes.map((r, i) => (
-          <li key={i}>
-            {r.title} {r.image && <img src={r.image} alt={r.title} width={100} />}
-          </li>
-        ))}
-      </ul>
+
+      <AddRecipeForm onAdded={onAdded} />
+
+      {loading ? <p>Loading...</p> : (
+        <ul>
+          {recipes.map(r => (
+            <li key={r.id} style={{ marginBottom: 12 }}>
+              <strong>{r.title}</strong><br />
+              {r.imageUrl && <img src={r.imageUrl} alt={r.title} width={160} style={{ display: 'block', marginTop: 6 }} />}
+              <div style={{ marginTop: 6 }}>
+                <button onClick={() => onDelete(r.id)}>Delete</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

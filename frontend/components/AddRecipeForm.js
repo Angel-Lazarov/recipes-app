@@ -1,60 +1,50 @@
+// frontend/components/AddRecipeForm.js
 import { useState } from 'react';
-import { addRecipe, uploadImage } from '../utils/api';
+import { uploadImage, createRecipe } from '../utils/api';
 
-export default function AddRecipeForm({ onRecipeAdded }) {
+export default function AddRecipeForm({ onAdded }) {
   const [title, setTitle] = useState('');
-  const [imageFile, setImageFile] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState(null);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
-
+    setBusy(true);
     try {
       let imageUrl = '';
-      if (imageFile) {
-        const uploadRes = await uploadImage(imageFile);
+      if (file) {
+        const uploadRes = await uploadImage(file);
         imageUrl = uploadRes.url;
       }
-
-      const newRecipe = await addRecipe({ title, imageUrl });
-      onRecipeAdded(newRecipe);
+      const newRecipe = await createRecipe({ title, imageUrl });
+      onAdded(newRecipe);
       setTitle('');
-      setImageFile(null);
+      setFile(null);
     } catch (err) {
       console.error(err);
-      setError('Something went wrong!');
+      setError(err.message || 'Error');
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={submit} style={{ marginBottom: 20 }}>
       <div>
-        <label>Recipe Title:</label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+        <label>Title</label><br />
+        <input value={title} onChange={e => setTitle(e.target.value)} required />
       </div>
 
-      <div>
-        <label>Image:</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImageFile(e.target.files[0])}
-        />
+      <div style={{ marginTop: 8 }}>
+        <label>Image (optional)</label><br />
+        <input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} />
       </div>
 
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : 'Add Recipe'}
-      </button>
+      <div style={{ marginTop: 10 }}>
+        <button type="submit" disabled={busy}>{busy ? 'Saving...' : 'Add Recipe'}</button>
+      </div>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </form>
