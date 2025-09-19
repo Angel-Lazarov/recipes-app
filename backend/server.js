@@ -9,22 +9,24 @@ import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
 
-// Разрешаваме заявки само от фронтенда
+// CORS - позволява заявки само от фронтенда
 app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json());
 
-// Multer за памет
+// Multer (в памет) за upload
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// In-memory рецепти
+// Прост in-memory масив за рецепти (title, imageUrl)
 let recipes = [
   { id: uuidv4(), title: 'Test Recipe 1', imageUrl: '' },
   { id: uuidv4(), title: 'Test Recipe 2', imageUrl: '' }
 ];
 
-// --- CRUD за рецепти ---
-app.get('/recipes', (req, res) => res.json(recipes));
+// --- CRUD endpoints за рецепти ---
+app.get('/recipes', (req, res) => {
+  res.json(recipes);
+});
 
 app.post('/recipes', (req, res) => {
   const { title, imageUrl = '' } = req.body;
@@ -79,8 +81,8 @@ app.post('/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-// Health check
+// health
 app.get('/', (req, res) => res.send('Backend is running!'));
 
-// Start server
+// start
 app.listen(PORT, () => console.log(`Backend listening on port ${PORT}`));
