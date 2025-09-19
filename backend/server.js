@@ -3,32 +3,48 @@ import multer from 'multer';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-import { PORT, CATBOX_USERHASH } from './config.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
+const port = process.env.PORT || 3000;
 
-// CORS
-const allowedOrigin = "http://localhost:3000"; // смени с URL на фронтенда
+// --- Разрешаваме фронтенда да прави заявки ---
+const allowedOrigin = process.env.FRONTEND_URL || "http://localhost:3001";
 app.use(cors({ origin: allowedOrigin }));
 
-// JSON Middleware
+// --- Middleware за парсване на JSON заявки ---
 app.use(express.json());
 
-// Multer
+// --- Настройка на multer за памет ---
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Upload endpoint
+// --- Тестови рецепти ---
+let recipes = [
+  { id: '1', name: 'Test Recipe 1' },
+  { id: '2', name: 'Test Recipe 2' },
+];
+
+// --- Ендпойнт за рецепти ---
+app.get('/recipes', (req, res) => {
+  res.json(recipes);
+});
+
+app.post('/recipes', (req, res) => {
+  const newRecipe = { id: `${recipes.length + 1}`, ...req.body };
+  recipes.push(newRecipe);
+  res.json(newRecipe);
+});
+
+// --- Ендпойнт за качване на изображение към Catbox ---
 app.post('/upload', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Не е избран файл!' });
 
   try {
     const formData = new FormData();
     formData.append('reqtype', 'fileupload');
-    formData.append('userhash', CATBOX_USERHASH);
+    formData.append('userhash', process.env.CATBOX_USERHASH);
     formData.append('fileToUpload', req.file.buffer, {
       filename: req.file.originalname,
       contentType: req.file.mimetype
@@ -39,32 +55,18 @@ app.post('/upload', upload.single('image'), async (req, res) => {
       body: formData
     });
 
-    if (!response.ok) throw new Error(`Catbox upload failed with status ${response.status}`);
-
+    if (!response.ok) throw new Error(`Catbox upload failed: ${response.status}`);
     const imageUrl = await response.text();
-    console.log(`Image uploaded: ${imageUrl}`);
     res.json({ url: imageUrl });
 
   } catch (err) {
-    console.error('Upload error:', err.message);
+    console.error(err);
     res.status(500).json({ error: 'Качването на изображението неуспя!' });
   }
 });
 
-// Anti-cache .js files
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// --- Тестов рут ---
+app.get('/', (req, res) => res.send('Backend is running!'));
 
-app.use((req, res, next) => {
-  if (req.url.endsWith(".js")) res.setHeader("Cache-Control", "no-store");
-  next();
-});
-
-// Serve static files
-app.use(express.static(path.join(__dirname, "public")));
-
-// Test route
-app.get('/', (req, res) => res.send('Server is running!'));
-
-// Start server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// --- Стартиране на сървъра ---
+app.listen(port, () => console.log(`Server running on port ${port}`));
