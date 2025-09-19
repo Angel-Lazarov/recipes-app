@@ -1,3 +1,4 @@
+// backend/server.js
 import express from 'express';
 import multer from 'multer';
 import fetch from 'node-fetch';
@@ -8,24 +9,22 @@ import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
 
-// CORS - позволява заявки само от фронтенда
+// Разрешаваме заявки само от фронтенда
 app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json());
 
-// Multer (в памет) за upload
+// Multer за памет
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Прост in-memory масив за рецепти (title, imageUrl)
+// In-memory рецепти
 let recipes = [
   { id: uuidv4(), title: 'Test Recipe 1', imageUrl: '' },
   { id: uuidv4(), title: 'Test Recipe 2', imageUrl: '' }
 ];
 
-// --- CRUD endpoints за рецепти ---
-app.get('/recipes', (req, res) => {
-  res.json(recipes);
-});
+// --- CRUD за рецепти ---
+app.get('/recipes', (req, res) => res.json(recipes));
 
 app.post('/recipes', (req, res) => {
   const { title, imageUrl = '' } = req.body;
@@ -72,7 +71,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
       return res.status(502).json({ error: 'Catbox upload failed' });
     }
 
-    const imageUrl = await response.text(); // Catbox връща URL в plain text
+    const imageUrl = await response.text();
     res.json({ url: imageUrl.trim() });
   } catch (err) {
     console.error('Upload error:', err);
@@ -80,8 +79,8 @@ app.post('/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-// health
+// Health check
 app.get('/', (req, res) => res.send('Backend is running!'));
 
-// start
+// Start server
 app.listen(PORT, () => console.log(`Backend listening on port ${PORT}`));
