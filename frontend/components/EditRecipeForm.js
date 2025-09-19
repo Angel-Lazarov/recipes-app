@@ -4,6 +4,9 @@ import { uploadImage, updateRecipe } from '../utils/api';
 
 export default function EditRecipeForm({ recipe, onUpdated, onCancel }) {
   const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('');
+  const [ingredients, setIngredients] = useState('');
+  const [steps, setSteps] = useState('');
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -11,7 +14,9 @@ export default function EditRecipeForm({ recipe, onUpdated, onCancel }) {
   useEffect(() => {
     if (recipe) {
       setTitle(recipe.title || '');
-      setFile(null); // няма да презаписваме съществуващата снимка докато не се избере нова
+      setCategory(recipe.category || '');
+      setIngredients((recipe.ingredients || []).join(', '));
+      setSteps((recipe.steps || []).join('\n'));
     }
   }, [recipe]);
 
@@ -25,10 +30,16 @@ export default function EditRecipeForm({ recipe, onUpdated, onCancel }) {
         const uploadRes = await uploadImage(file);
         imageUrl = uploadRes.url;
       }
-      const updated = await updateRecipe(recipe.id, { title, imageUrl });
-      if (typeof onUpdated === 'function') {
-        onUpdated(updated);
-      }
+
+      const updatedRecipe = await updateRecipe(recipe.id, {
+        title,
+        category,
+        ingredients: ingredients.split(',').map(i => i.trim()),
+        steps: steps.split('\n').map(s => s.trim()),
+        imageUrl
+      });
+
+      onUpdated(updatedRecipe);
     } catch (err) {
       console.error(err);
       setError(err.message || 'Error');
@@ -37,25 +48,39 @@ export default function EditRecipeForm({ recipe, onUpdated, onCancel }) {
     }
   };
 
+  if (!recipe) return null;
+
   return (
-    <form onSubmit={submit} style={{ marginBottom: 20 }}>
+    <form onSubmit={submit} style={{ marginBottom: 20, border: '1px solid #ccc', padding: 10 }}>
+      <h3>Edit Recipe</h3>
+
       <div>
         <label>Title</label><br />
         <input value={title} onChange={e => setTitle(e.target.value)} required />
       </div>
 
       <div style={{ marginTop: 8 }}>
+        <label>Category</label><br />
+        <input value={category} onChange={e => setCategory(e.target.value)} required />
+      </div>
+
+      <div style={{ marginTop: 8 }}>
+        <label>Ingredients (comma separated)</label><br />
+        <input value={ingredients} onChange={e => setIngredients(e.target.value)} required />
+      </div>
+
+      <div style={{ marginTop: 8 }}>
+        <label>Steps (newline separated)</label><br />
+        <textarea value={steps} onChange={e => setSteps(e.target.value)} required />
+      </div>
+
+      <div style={{ marginTop: 8 }}>
         <label>Image (optional)</label><br />
         <input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} />
-        {recipe.imageUrl && !file && (
-          <div style={{ marginTop: 6 }}>
-            <img src={recipe.imageUrl} alt={recipe.title} width={160} />
-          </div>
-        )}
       </div>
 
       <div style={{ marginTop: 10 }}>
-        <button type="submit" disabled={busy}>{busy ? 'Saving...' : 'Save Changes'}</button>
+        <button type="submit" disabled={busy}>{busy ? 'Saving...' : 'Update Recipe'}</button>
         <button type="button" onClick={onCancel} style={{ marginLeft: 8 }}>Cancel</button>
       </div>
 
