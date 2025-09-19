@@ -1,4 +1,3 @@
-// backend/server.js
 import express from 'express';
 import multer from 'multer';
 import fetch from 'node-fetch';
@@ -17,12 +16,30 @@ app.use(express.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Празен in-memory масив за рецепти
-let recipes = [];
+// Прост in-memory масив за рецепти (title, imageUrl)
+let recipes = [
+  { id: uuidv4(), title: 'Test Recipe 1', imageUrl: '' },
+  { id: uuidv4(), title: 'Test Recipe 2', imageUrl: '' }
+];
 
 // --- CRUD endpoints за рецепти ---
+// GET с филтър и сортиране
 app.get('/recipes', (req, res) => {
-  res.json(recipes);
+  let result = [...recipes];
+  const { search, sort } = req.query;
+
+  if (search) {
+    const term = search.toLowerCase();
+    result = result.filter(r => r.title.toLowerCase().includes(term));
+  }
+
+  if (sort === 'asc') {
+    result.sort((a, b) => a.title.localeCompare(b.title));
+  } else if (sort === 'desc') {
+    result.sort((a, b) => b.title.localeCompare(a.title));
+  }
+
+  res.json(result);
 });
 
 app.post('/recipes', (req, res) => {

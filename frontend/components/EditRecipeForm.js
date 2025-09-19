@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { uploadImage, updateRecipe } from '../utils/api';
 
-export default function EditRecipeForm({ recipe, onSaved, onCancel }) {
+export default function EditRecipeForm({ recipe, onUpdated, onCancel }) {
   const [title, setTitle] = useState(recipe.title);
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -18,7 +18,8 @@ export default function EditRecipeForm({ recipe, onSaved, onCancel }) {
         imageUrl = uploadRes.url;
       }
       const updated = await updateRecipe(recipe.id, { title, imageUrl });
-      onSaved(updated);
+      onUpdated(updated);
+      onCancel();
     } catch (err) {
       console.error(err);
       setError(err.message || 'Error');
@@ -28,7 +29,7 @@ export default function EditRecipeForm({ recipe, onSaved, onCancel }) {
   };
 
   return (
-    <form onSubmit={submit} style={{ marginBottom: 20, border: '1px solid #ccc', padding: 10 }}>
+    <form onSubmit={submit} style={{ marginBottom: 20 }}>
       <div>
         <label>Title</label><br />
         <input value={title} onChange={e => setTitle(e.target.value)} required />
@@ -40,8 +41,8 @@ export default function EditRecipeForm({ recipe, onSaved, onCancel }) {
       </div>
 
       <div style={{ marginTop: 10 }}>
-        <button type="submit" disabled={busy}>{busy ? 'Saving...' : 'Save'}</button>
-        <button type="button" onClick={onCancel} style={{ marginLeft: 10 }}>Cancel</button>
+        <button type="submit" disabled={busy}>{busy ? 'Saving...' : 'Update Recipe'}</button>
+        <button type="button" onClick={onCancel} style={{ marginLeft: 6 }}>Cancel</button>
       </div>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
