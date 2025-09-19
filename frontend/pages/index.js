@@ -7,28 +7,24 @@ import EditRecipeForm from '../components/EditRecipeForm';
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(null);
-  const [filters, setFilters] = useState({ search: '', category: '', ingredient: '' });
-
-  const loadRecipes = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchRecipes(filters);
-      setRecipes(data);
-    } catch (err) {
-      console.error(err);
-      setRecipes([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [editingRecipe, setEditingRecipe] = useState(null);
 
   useEffect(() => {
-    loadRecipes();
-  }, [filters]);
+    fetchRecipes()
+      .then(data => setRecipes(data))
+      .catch(err => {
+        console.error(err);
+        setRecipes([]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const onAdded = (r) => setRecipes(prev => [...prev, r]);
-  const onUpdated = (r) => setRecipes(prev => prev.map(p => p.id === r.id ? r : p));
+  const onUpdated = (r) => {
+    setRecipes(prev => prev.map(p => p.id === r.id ? r : p));
+    setEditingRecipe(null);
+  };
+
   const onDelete = async (id) => {
     try {
       await deleteRecipe(id);
@@ -43,48 +39,28 @@ export default function Home() {
     <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
       <h1>Recipes</h1>
 
-      <div style={{ marginBottom: 20 }}>
-        <input
-          placeholder="Search by name"
-          value={filters.search}
-          onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
-          style={{ marginRight: 8 }}
-        />
-        <input
-          placeholder="Filter by category"
-          value={filters.category}
-          onChange={e => setFilters(prev => ({ ...prev, category: e.target.value }))}
-          style={{ marginRight: 8 }}
-        />
-        <input
-          placeholder="Filter by ingredient"
-          value={filters.ingredient}
-          onChange={e => setFilters(prev => ({ ...prev, ingredient: e.target.value }))}
-        />
-      </div>
-
-      {editing ? (
-        <EditRecipeForm
-          recipe={editing}
-          onSaved={(r) => { onUpdated(r); setEditing(null); }}
-          onCancel={() => setEditing(null)}
-        />
-      ) : (
-        <AddRecipeForm onAdded={onAdded} />
-      )}
+      {!editingRecipe && <AddRecipeForm onAdded={onAdded} />}
 
       {loading ? <p>Loading...</p> : (
         <ul>
           {recipes.map(r => (
             <li key={r.id} style={{ marginBottom: 12 }}>
-              <strong>{r.title}</strong> ({r.category})<br />
-              {r.imageUrl && <img src={r.imageUrl} alt={r.title} width={160} style={{ display: 'block', marginTop: 6 }} />}
-              <div>Ingredients: {r.ingredients.join(', ')}</div>
-              <div>Steps: {r.steps}</div>
-              <div style={{ marginTop: 6 }}>
-                <button onClick={() => setEditing(r)} style={{ marginRight: 8 }}>Edit</button>
-                <button onClick={() => onDelete(r.id)}>Delete</button>
-              </div>
+              {editingRecipe?.id === r.id ? (
+                <EditRecipeForm
+                  recipe={editingRecipe}
+                  onUpdated={onUpdated}
+                  onCancel={() => setEditingRecipe(null)}
+                />
+              ) : (
+                <>
+                  <strong>{r.title}</strong><br />
+                  {r.imageUrl && <img src={r.imageUrl} alt={r.title} width={160} style={{ display: 'block', marginTop: 6 }} />}
+                  <div style={{ marginTop: 6 }}>
+                    <button onClick={() => setEditingRecipe(r)}>Edit</button>
+                    <button onClick={() => onDelete(r.id)} style={{ marginLeft: 8 }}>Delete</button>
+                  </div>
+                </>
+              )}
             </li>
           ))}
         </ul>
