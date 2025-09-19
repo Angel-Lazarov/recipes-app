@@ -17,11 +17,8 @@ app.use(express.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Прост in-memory масив за рецепти (title, imageUrl)
-let recipes = [
-  { id: uuidv4(), title: 'Test Recipe 1', imageUrl: '' },
-  { id: uuidv4(), title: 'Test Recipe 2', imageUrl: '' }
-];
+// Празен in-memory масив за рецепти
+let recipes = [];
 
 // --- CRUD endpoints за рецепти ---
 app.get('/recipes', (req, res) => {
