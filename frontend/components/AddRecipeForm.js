@@ -1,40 +1,41 @@
-import { useState, useEffect } from 'react';
-import { uploadImage, createRecipe, updateRecipe } from '../utils/api';
+// frontend/components/AddRecipeForm.js
+import { useState } from 'react';
+import { uploadImage, createRecipe } from '../utils/api';
 
-export default function AddRecipeForm({ onAdded, onUpdated, initialData = null, onCancel }) {
+export default function AddRecipeForm({ onAdded }) {
   const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('');
+  const [ingredients, setIngredients] = useState('');
+  const [steps, setSteps] = useState('');
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const isEdit = !!initialData;
-
-  useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title || '');
-      setFile(null); // нов файл по избор
-    }
-  }, [initialData]);
 
   const submit = async (e) => {
     e.preventDefault();
     setError('');
     setBusy(true);
     try {
-      let imageUrl = initialData?.imageUrl || '';
+      let imageUrl = '';
       if (file) {
         const uploadRes = await uploadImage(file);
         imageUrl = uploadRes.url;
       }
 
-      if (isEdit) {
-        const updated = await updateRecipe(initialData.id, { title, imageUrl });
-        onUpdated(updated);
-      } else {
-        const newRecipe = await createRecipe({ title, imageUrl });
-        onAdded(newRecipe);
-      }
+      const newRecipe = await createRecipe({
+        title,
+        category,
+        ingredients: ingredients.split(',').map(s => s.trim()),
+        steps,
+        imageUrl
+      });
+
+      onAdded(newRecipe);
 
       setTitle('');
+      setCategory('');
+      setIngredients('');
+      setSteps('');
       setFile(null);
     } catch (err) {
       console.error(err);
@@ -51,18 +52,28 @@ export default function AddRecipeForm({ onAdded, onUpdated, initialData = null, 
         <input value={title} onChange={e => setTitle(e.target.value)} required />
       </div>
 
+      <div>
+        <label>Category</label><br />
+        <input value={category} onChange={e => setCategory(e.target.value)} required />
+      </div>
+
+      <div>
+        <label>Ingredients (comma separated)</label><br />
+        <input value={ingredients} onChange={e => setIngredients(e.target.value)} required />
+      </div>
+
+      <div>
+        <label>Steps</label><br />
+        <textarea value={steps} onChange={e => setSteps(e.target.value)} required />
+      </div>
+
       <div style={{ marginTop: 8 }}>
         <label>Image (optional)</label><br />
         <input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} />
       </div>
 
       <div style={{ marginTop: 10 }}>
-        <button type="submit" disabled={busy}>
-          {busy ? 'Saving...' : isEdit ? 'Update Recipe' : 'Add Recipe'}
-        </button>
-        {isEdit && onCancel && (
-          <button type="button" onClick={onCancel} style={{ marginLeft: 8 }}>Cancel</button>
-        )}
+        <button type="submit" disabled={busy}>{busy ? 'Saving...' : 'Add Recipe'}</button>
       </div>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}

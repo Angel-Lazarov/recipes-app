@@ -1,3 +1,4 @@
+// backend/server.js
 import express from 'express';
 import multer from 'multer';
 import fetch from 'node-fetch';
@@ -16,35 +17,54 @@ app.use(express.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Прост in-memory масив за рецепти (title, imageUrl)
+// Прост in-memory масив за рецепти
 let recipes = [
-  { id: uuidv4(), title: 'Test Recipe 1', imageUrl: '' },
-  { id: uuidv4(), title: 'Test Recipe 2', imageUrl: '' }
+  {
+    id: uuidv4(),
+    title: 'Test Recipe 1',
+    imageUrl: '',
+    category: 'Dessert',
+    ingredients: ['Sugar', 'Flour'],
+    steps: ['Mix', 'Bake']
+  },
+  {
+    id: uuidv4(),
+    title: 'Test Recipe 2',
+    imageUrl: '',
+    category: 'Main',
+    ingredients: ['Chicken', 'Salt'],
+    steps: ['Season', 'Cook']
+  }
 ];
 
 // --- CRUD endpoints за рецепти ---
-// GET с филтър и сортиране
+// GET с филтър
 app.get('/recipes', (req, res) => {
   let result = [...recipes];
-  const { search, sort } = req.query;
+  const { search, category, ingredient } = req.query;
 
   if (search) {
     const term = search.toLowerCase();
     result = result.filter(r => r.title.toLowerCase().includes(term));
   }
 
-  if (sort === 'asc') {
-    result.sort((a, b) => a.title.localeCompare(b.title));
-  } else if (sort === 'desc') {
-    result.sort((a, b) => b.title.localeCompare(a.title));
+  if (category) {
+    result = result.filter(r => r.category.toLowerCase() === category.toLowerCase());
+  }
+
+  if (ingredient) {
+    const term = ingredient.toLowerCase();
+    result = result.filter(r =>
+      r.ingredients.some(i => i.toLowerCase().includes(term))
+    );
   }
 
   res.json(result);
 });
 
 app.post('/recipes', (req, res) => {
-  const { title, imageUrl = '' } = req.body;
-  const newRecipe = { id: uuidv4(), title, imageUrl };
+  const { title, imageUrl = '', category = '', ingredients = [], steps = [] } = req.body;
+  const newRecipe = { id: uuidv4(), title, imageUrl, category, ingredients, steps };
   recipes.push(newRecipe);
   res.status(201).json(newRecipe);
 });
