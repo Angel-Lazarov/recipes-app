@@ -1,57 +1,70 @@
-import express from "express";
-import multer from "multer";
-import cors from "cors";
-import { db } from "./firebase.js"; // връзка към Firebase
-import { v4 as uuidv4 } from "uuid";
+import express from 'express';
+import multer from 'multer';
+import fetch from 'node-fetch';
+import FormData from 'form-data';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { PORT, ALLOWED_ORIGIN, CATBOX_USERHASH } from './config.js';
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-// Разрешаваме фронтенда да прави заявки
-app.use(cors({ origin: "http://localhost:3000" })); // смени с твоя фронтенд URL
+// Разрешаваме заявки само от фронтенда
+app.use(cors({ origin: ALLOWED_ORIGIN }));
+
+// Middleware за парсване на JSON заявки
 app.use(express.json());
 
-// Multer за качване на файлове в паметта
+// Multer настройка за памет
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// --- Ендпойнт за рецепти ---
-app.get("/recipes", async (req, res) => {
-  const snapshot = await db.collection("recipes").get();
-  const recipes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  res.json(recipes);
-});
-
-app.post("/recipes", async (req, res) => {
-  const docRef = await db.collection("recipes").add(req.body);
-  res.json({ id: docRef.id });
-});
-
-app.put("/recipes/:id", async (req, res) => {
-  const { id } = req.params;
-  await db.collection("recipes").doc(id).update(req.body);
-  res.json({ id });
-});
-
-app.delete("/recipes/:id", async (req, res) => {
-  const { id } = req.params;
-  await db.collection("recipes").doc(id).delete();
-  res.json({ id });
-});
-
-// --- Ендпойнт за качване на изображения ---
-app.post("/upload", upload.single("image"), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "Не е избран файл!" });
+// Ендпойнт за качване на изображения в Catbox
+app.post('/upload', upload.single('image'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Не е избран файл!' });
 
   try {
-    // Тук можеш да добавиш логика за качване на снимката в Catbox или друг сървър
-    // За тест, връщаме временно URL
-    const imageUrl = `https://via.placeholder.com/300.png?text=${uuidv4()}`;
+    const formData = new FormData();
+    formData.append('reqtype', 'fileupload');
+    formData.append('userhash', CATBOX_USERHASH);
+    formData.append('fileToUpload', req.file.buffer, {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype
+    });
+
+    const response = await fetch('https://catbox.moe/user/api.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error(`Catbox upload failed with status ${response.status}`);
+    }
+
+    const imageUrl = await response.text();
+    console.log(`Image uploaded: ${imageUrl}`);
     res.json({ url: imageUrl });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Качването на изображението неуспя!" });
+    console.error('Upload error:', err.message);
+    res.status(500).json({ error: 'Качването на изображението неуспя!' });
   }
 });
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+// Анти-кеширане за всички .js файлове
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use((req, res, next) => {
+  if (req.url.endsWith('.js')) res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+
+// Сервиране на статични файлове (ако има такива)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Тестов рут
+app.get('/', (req, res) => res.send('Server is running!'));
+
+// Стартиране на сървъра
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
