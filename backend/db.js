@@ -20,12 +20,15 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
+// Проверка дали pool е наличен
 export const poolAvailable = !!pool;
 
+// Функция за изпълнение на заявки
 export async function query(text, params) {
   return pool.query(text, params);
 }
 
+// Функция за затваряне на Pool
 export async function closePool() {
   await pool.end();
 }

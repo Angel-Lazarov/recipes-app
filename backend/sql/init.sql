@@ -1,7 +1,10 @@
 CREATE TABLE IF NOT EXISTS recipes (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    ingredients TEXT NOT NULL,
-    instructions TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW()
+    title TEXT NOT NULL,
+    image_url TEXT,
+    category TEXT,
+    ingredients TEXT[],
+    steps TEXT[],
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );

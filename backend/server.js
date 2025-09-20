@@ -1,4 +1,3 @@
-// backend/server.js
 import express from 'express';
 import multer from 'multer';
 import fetch from 'node-fetch';
@@ -9,44 +8,20 @@ import { poolAvailable, query } from './db.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
+
 app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json());
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// fallback in-memory
+// fallback in-memory (само ако база липсва)
 let recipesInMemory = [
   { id: uuidv4(), title: 'Test Recipe 1', image_url: '', imageUrl: '', category: 'Dessert', ingredients: ['sugar', 'flour'], steps: ['Mix', 'Bake'] },
   { id: uuidv4(), title: 'Test Recipe 2', image_url: '', imageUrl: '', category: 'Main', ingredients: ['chicken', 'salt'], steps: ['Season', 'Cook'] }
 ];
 
-// --- Автоматично създаване на таблицата recipes ---
-async function ensureTables() {
-  if (!poolAvailable) return;
-
-  const sql = `
-    CREATE TABLE IF NOT EXISTS recipes (
-      id SERIAL PRIMARY KEY,
-      title TEXT NOT NULL,
-      image_url TEXT,
-      category TEXT,
-      ingredients TEXT[],
-      steps TEXT[],
-      created_at TIMESTAMP DEFAULT NOW(),
-      updated_at TIMESTAMP DEFAULT NOW()
-    );
-  `;
-
-  try {
-    await query(sql);
-    console.log('Recipes table ensured.');
-  } catch (err) {
-    console.error('Failed to ensure tables:', err);
-  }
-}
-
-// --- DB helper функции ---
+// --- помощни функции (DB или in-memory) ---
 async function getRecipesFromDb(filters = {}) {
   const where = [];
   const params = [];
@@ -104,6 +79,7 @@ async function deleteRecipeDb(id) {
 }
 
 // --- Routes ---
+
 app.get('/recipes', async (req, res) => {
   try {
     const { search, category, ingredient } = req.query;
@@ -179,7 +155,6 @@ app.delete('/recipes/:id', async (req, res) => {
   }
 });
 
-// Upload към Catbox
 app.post('/upload', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file' });
 
@@ -211,9 +186,6 @@ app.post('/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-// health
 app.get('/', (req, res) => res.send('Backend is running!'));
 
-// --- Стартиране на сървъра ---
-await ensureTables();
 app.listen(PORT, () => console.log(`Backend listening on port ${PORT}  (poolAvailable=${poolAvailable})`));
