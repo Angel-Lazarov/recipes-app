@@ -1,4 +1,3 @@
-// frontend/components/RecipeForm.js
 import { useState, useEffect } from 'react';
 import { uploadImage, createRecipe, updateRecipe } from '../utils/api';
 
@@ -48,7 +47,6 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
     setError('');
     try {
       let imageUrl = preview;
-
       if (file) {
         const res = await uploadImage(file);
         imageUrl = res.url;

@@ -1,4 +1,3 @@
-// frontend/pages/index.js
 import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
