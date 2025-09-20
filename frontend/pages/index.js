@@ -50,10 +50,10 @@ export default function Home() {
 
   return (
     <div>
-      <h1>Моите рецепти</h1>
+      <h1>📖 Моите рецепти</h1>
 
-      <button id="showFormBtn" onClick={() => setShowAdd(prev => !prev)}>
-        Добави нова рецепта
+      <button onClick={() => setShowAdd(prev => !prev)}>
+        ➕ Добави нова рецепта
       </button>
 
       {showAdd && !editing && (
@@ -73,7 +73,7 @@ export default function Home() {
         />
       )}
 
-      <div className="search-container filter-container">
+      <div>
         <input
           placeholder="Търси по име"
           value={filters.search}
@@ -96,11 +96,10 @@ export default function Home() {
           {filteredRecipes.map(r => (
             <div key={r.id} className="recipe">
               <h3>{r.title}</h3>
-              <p>Категория: {r.category}</p>
+              <p><strong>Категория:</strong> {r.category}</p>
               {r.imageUrl && <img src={r.imageUrl} alt={r.title} />}
               <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
               <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
-
               <div className="buttons">
                 <button onClick={() => onDelete(r.id)}>Изтрий</button>
                 <button onClick={() => setEditing(r)}>Редактирай</button>
