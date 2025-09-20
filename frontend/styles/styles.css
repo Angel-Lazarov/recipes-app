@@ -1,4 +1,4 @@
-/* frontend/styles.css - финална версия с подобрени бутони и hover ефекти */
+/* frontend/styles.css - актуализирана версия с нови визуални подобрения */
 
 /* Основни стилове */
 body {
@@ -18,7 +18,7 @@ h1 {
 
 /* Бутон за добавяне рецепта */
 #showFormBtn {
-    background-color: #007bff;
+    background-color: #4a90e2;
     color: white;
     border: none;
     border-radius: 8px;
@@ -29,7 +29,7 @@ h1 {
 }
 
 #showFormBtn:hover {
-    background-color: #0056b3;
+    background-color: #357ab8;
     transform: translateY(-2px);
 }
 
@@ -68,8 +68,8 @@ form input, form textarea {
 
 form input:focus, form textarea:focus {
     outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 4px rgba(0,123,255,0.4);
+    border-color: #4a90e2;
+    box-shadow: 0 0 4px rgba(74,144,226,0.4);
 }
 
 /* Ограничаване на preview изображението във формата и адаптивност */
@@ -106,23 +106,23 @@ form button {
 }
 
 form button[type="submit"] {
-    background-color: #28a745;
+    background-color: #4CAF50;
     color: white;
 }
 
 form button[type="submit"]:hover {
-    background-color: #218838;
+    background-color: #3e8e41;
     transform: translateY(-2px);
 }
 
 form button[type="button"] {
-    background-color: #dc3545;
+    background-color: #f08080;
     color: white;
     margin-left: 8px;
 }
 
 form button[type="button"]:hover {
-    background-color: #b02a37;
+    background-color: #d97373;
     transform: translateY(-2px);
 }
 
@@ -146,13 +146,13 @@ form button[type="button"]:hover {
 
 /* Отделна рецепта */
 .recipe {
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     border-radius: 12px;
     padding: 15px;
     width: 280px;
     display: flex;
     flex-direction: column;
-    background-color: #fff;
+    background-color: #fefefe; /* по-мек фон */
     box-sizing: border-box;
     transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -160,6 +160,14 @@ form button[type="button"]:hover {
 .recipe:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+}
+
+/* Центриране на заглавията на рецептите */
+.recipe h3 {
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 8px;
+    color: #4a90e2;
 }
 
 /* Текст за категория, съставки и стъпки */
@@ -176,28 +184,33 @@ form button[type="button"]:hover {
     border-radius: 6px;
 }
 
+/* Бутоните на картите – по-меко визуално */
 .recipe button {
     margin-top: 8px;
     padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
 }
 
-/* Специфични бутони в рецептата */
 .recipe button:first-of-type {
-    background-color: #dc3545;
+    background-color: #f28b82; /* мека червена тоналност */
     color: white;
 }
 
 .recipe button:first-of-type:hover {
-    background-color: #b02a37;
+    background-color: #e06666;
 }
 
 .recipe button:last-of-type {
-    background-color: #28a745;
+    background-color: #81c784; /* мека зелена тоналност */
     color: white;
 }
 
 .recipe button:last-of-type:hover {
-    background-color: #218838;
+    background-color: #66a57f;
 }
 
 /* Грешки и съобщения във формата */
