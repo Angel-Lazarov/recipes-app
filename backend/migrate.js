@@ -1,5 +1,4 @@
-import fs from 'fs';
-import path from 'path';
+// backend/migrate.js
 import { query, poolAvailable, closePool } from './db.js';
 
 async function migrate() {
@@ -8,22 +7,25 @@ async function migrate() {
     process.exit(1);
   }
 
-  const sqlPath = path.join(process.cwd(), 'sql', 'init.sql');
-
-  if (!fs.existsSync(sqlPath)) {
-    console.error(`SQL file not found at ${sqlPath}`);
-    process.exit(1);
-  }
-
-  const sql = fs.readFileSync(sqlPath, 'utf8');
+  const createTableSQL = `
+    CREATE TABLE IF NOT EXISTS recipes (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      title TEXT NOT NULL,
+      image_url TEXT,
+      ingredients TEXT[],
+      steps TEXT[],
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
 
   try {
-    await query(sql);
+    await query(createTableSQL);
     console.log('Recipes table ensured.');
     await closePool();
     process.exit(0);
   } catch (err) {
     console.error('Migration failed:', err);
+    await closePool();
     process.exit(1);
   }
 }
