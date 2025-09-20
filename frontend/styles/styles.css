@@ -1,4 +1,4 @@
-/* frontend/styles.css - финална версия с филтърни полета */
+/* frontend/styles.css - финална версия с филтри в неутрален бежов тон */
 
 body {
     font-family: Arial, sans-serif;
@@ -220,9 +220,8 @@ p.error {
     transform: translateY(-1px);
 }
 
-/* --- ФИЛТЪРИ --- */
-.search-container input,
-.filter-container select {
+/* --- ФИЛТРИ --- */
+.filter-input {
     padding: 10px 12px;
     border-radius: 8px;
     border: 1px solid #cbbca5;
@@ -233,8 +232,7 @@ p.error {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.search-container input:focus,
-.filter-container select:focus {
+.filter-input:focus {
     outline: none;
     border-color: #c79f70;
     box-shadow: 0 0 6px rgba(199,159,112,0.4);
@@ -255,8 +253,7 @@ p.error {
         width: 90%;
     }
 
-    .search-container input,
-    .filter-container select {
+    .filter-input {
         width: 100%;
         margin-bottom: 10px;
     }

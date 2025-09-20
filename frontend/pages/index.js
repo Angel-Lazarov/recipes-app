@@ -1,4 +1,3 @@
-// frontend/pages/index.js
 import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
@@ -52,7 +51,7 @@ export default function Home() {
     <div>
       <h1>📖 Моите рецепти</h1>
 
-      <button onClick={() => setShowAdd(prev => !prev)}>
+      <button id="showFormBtn" onClick={() => setShowAdd(prev => !prev)}>
         ➕ Добави нова рецепта
       </button>
 
@@ -73,18 +72,21 @@ export default function Home() {
         />
       )}
 
-      <div>
+      <div style={{ marginBottom: '20px' }}>
         <input
+          className="filter-input"
           placeholder="Търси по име"
           value={filters.search}
           onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
         />
         <input
+          className="filter-input"
           placeholder="Филтър по категория"
           value={filters.category}
           onChange={e => setFilters(prev => ({ ...prev, category: e.target.value }))}
         />
         <input
+          className="filter-input"
           placeholder="Филтър по съставка"
           value={filters.ingredient}
           onChange={e => setFilters(prev => ({ ...prev, ingredient: e.target.value }))}
@@ -94,7 +96,7 @@ export default function Home() {
       {loading ? <p>Зареждане...</p> : (
         <div id="recipeList">
           {filteredRecipes.map(r => (
-            <div key={r.id} className="recipe">
+            <div className="recipe" key={r.id}>
               <h3>{r.title}</h3>
               <p><strong>Категория:</strong> {r.category}</p>
               {r.imageUrl && <img src={r.imageUrl} alt={r.title} />}

@@ -1,4 +1,3 @@
-// frontend/components/RecipeForm.js
 import { useState, useEffect } from 'react';
 import { uploadImage, createRecipe, updateRecipe } from '../utils/api';
 
@@ -77,38 +76,42 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   return (
     <form onSubmit={submit}>
       <label>Име на рецепта</label>
-      <input 
-        type="text" 
-        value={title} 
-        placeholder="Име на рецептата" 
-        onChange={e => setTitle(e.target.value)} 
-        required 
+      <input
+        className="filter-input"
+        type="text"
+        value={title}
+        placeholder="Име на рецептата"
+        onChange={e => setTitle(e.target.value)}
+        required
       />
 
       <label>Категория</label>
-      <input 
-        type="text" 
-        value={category} 
-        placeholder="Например: Супа, Десерт..." 
-        onChange={e => setCategory(e.target.value)} 
-        required 
+      <input
+        className="filter-input"
+        type="text"
+        value={category}
+        placeholder="Например: Супа, Десерт..."
+        onChange={e => setCategory(e.target.value)}
+        required
       />
 
       <label>Съставки (разделени със запетаи)</label>
-      <input 
-        type="text" 
-        value={ingredients} 
-        placeholder="Например: захар, брашно, яйца" 
-        onChange={e => setIngredients(e.target.value)} 
-        required 
+      <input
+        className="filter-input"
+        type="text"
+        value={ingredients}
+        placeholder="Например: захар, брашно, яйца"
+        onChange={e => setIngredients(e.target.value)}
+        required
       />
 
       <label>Стъпки (нов ред за всяка стъпка)</label>
-      <textarea 
-        value={steps} 
-        placeholder="Например: Смесете съставките..." 
-        onChange={e => setSteps(e.target.value)} 
-        required 
+      <textarea
+        className="filter-input"
+        value={steps}
+        placeholder="Например: Смесете съставките..."
+        onChange={e => setSteps(e.target.value)}
+        required
       />
 
       <label>Снимка (по избор)</label>
@@ -116,11 +119,11 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
 
       {preview && <img src={preview} alt="Преглед" />}
 
-      <div>
+      <div style={{ marginTop: '10px' }}>
         <button type="submit" disabled={busy}>
           {busy ? (recipe ? 'Запазване...' : 'Добавяне...') : (recipe ? 'Запази' : 'Добави')}
         </button>
-        <button type="button" onClick={onCancel}>Отказ</button>
+        <button type="button" onClick={onCancel} style={{ marginLeft: '8px' }}>Отказ</button>
       </div>
 
       {error && <p className="error">{error}</p>}
