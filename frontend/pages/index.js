@@ -50,10 +50,10 @@ export default function Home() {
 
   return (
     <div>
-      <h1>📖 Моите рецепти</h1>
+      <h1>Моите рецепти</h1>
 
       <button onClick={() => setShowAdd(prev => !prev)}>
-        ➕ Добави нова рецепта
+        Добави нова рецепта
       </button>
 
       {showAdd && !editing && (
