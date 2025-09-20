@@ -1,22 +1,28 @@
 services:
   - type: web
-    name: recipes-backend
+    name: recipes-app-backend
     env: node
     rootDir: backend
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: node migrate.js && npm start
+    branch: main
     envVars:
       - key: PORT
-        value: 3000
+        value: "3000"
       - key: CATBOX_USERHASH
-        fromSecret: CATBOX_USERHASH  # можеш да го добавиш в Render secrets
+        value: "7912c04e840481e42b4982b55"
+      - key: DATABASE_URL
+        value: "postgresql://recipesdb_owfc_user:LAhe9gFT60LHU7lRcCEDk5YRcQsrKh9m@dpg-d3792mogjchc73c2sg9g-a/recipesdb_owfc"
+      - key: FRONTEND_URL
+        value: "https://recipes-app-frontend.onrender.com"
 
   - type: web
-    name: recipes-frontend
+    name: recipes-app-frontend
     env: node
     rootDir: frontend
-    buildCommand: npm install
-    startCommand: npm run dev
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    branch: main
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        value: https://your-backend-url.onrender.com
+        value: "https://recipes-app-backend.onrender.com"
