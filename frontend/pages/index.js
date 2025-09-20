@@ -52,7 +52,7 @@ export default function Home() {
     <div>
       <h1>Моите рецепти</h1>
 
-      <button onClick={() => setShowAdd(prev => !prev)}>
+      <button id="showFormBtn" onClick={() => setShowAdd(prev => !prev)}>
         Добави нова рецепта
       </button>
 
@@ -73,7 +73,7 @@ export default function Home() {
         />
       )}
 
-      <div>
+      <div className="search-container filter-container">
         <input
           placeholder="Търси по име"
           value={filters.search}
@@ -92,9 +92,9 @@ export default function Home() {
       </div>
 
       {loading ? <p>Зареждане...</p> : (
-        <div>
+        <div id="recipeList">
           {filteredRecipes.map(r => (
-            <div key={r.id}>
+            <div key={r.id} className="recipe">
               <h3>{r.title}</h3>
               <p>Категория: {r.category}</p>
               {r.imageUrl && <img src={r.imageUrl} alt={r.title} />}
