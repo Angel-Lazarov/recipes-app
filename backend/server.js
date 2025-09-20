@@ -18,10 +18,11 @@ async function query(text, params) {
 
 async function ensureRecipesTable() {
   if (!pool) return;
+
   // Създаваме таблицата, ако не съществува
   await query(`
     CREATE TABLE IF NOT EXISTS recipes (
-      id UUID PRIMARY KEY,
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       title TEXT,
       image_url TEXT,
       category TEXT,
@@ -31,31 +32,27 @@ async function ensureRecipesTable() {
       updated_at TIMESTAMP DEFAULT now()
     );
   `);
-  // Проверка и добавяне на липсващи колони
-  const cols = ['title', 'image_url', 'category', 'ingredients', 'steps', 'created_at', 'updated_at'];
+
+  // Добавяне на липсващи колони, ако ги няма
+  const cols = [
+    { name: 'title', type: 'TEXT' },
+    { name: 'image_url', type: 'TEXT' },
+    { name: 'category', type: 'TEXT' },
+    { name: 'ingredients', type: 'TEXT[]' },
+    { name: 'steps', type: 'TEXT[]' },
+    { name: 'created_at', type: 'TIMESTAMP DEFAULT now()' },
+    { name: 'updated_at', type: 'TIMESTAMP DEFAULT now()' }
+  ];
+
   for (const col of cols) {
     await query(`
       ALTER TABLE recipes
-      ADD COLUMN IF NOT EXISTS ${col} ${
-      col === 'ingredients' || col === 'steps' ? 'TEXT[]' : col.includes('at') ? 'TIMESTAMP DEFAULT now()' : 'TEXT'
-    };
+      ADD COLUMN IF NOT EXISTS ${col.name} ${col.type};
     `);
   }
+
   console.log('Recipes table ensured.');
 }
-
-// Express setup
-const app = express();
-app.use(cors({ origin: FRONTEND_URL }));
-app.use(express.json());
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-// fallback in-memory
-let recipesInMemory = [
-  { id: uuidv4(), title: 'Test Recipe 1', image_url: '', imageUrl: '', category: 'Dessert', ingredients: ['sugar', 'flour'], steps: ['Mix', 'Bake'] },
-  { id: uuidv4(), title: 'Test Recipe 2', image_url: '', imageUrl: '', category: 'Main', ingredients: ['chicken', 'salt'], steps: ['Season', 'Cook'] }
-];
 
 // --- DB helper functions ---
 async function getRecipesFromDb(filters = {}) {
@@ -92,7 +89,14 @@ async function createRecipeDb(data) {
     VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING id, title, image_url AS "imageUrl", category, ingredients, steps
   `;
-  const vals = [uuidv4(), data.title, data.imageUrl || null, data.category || null, data.ingredients || [], data.steps || []];
+  const vals = [
+    uuidv4(),
+    data.title,
+    data.imageUrl || null,
+    data.category || null,
+    data.ingredients || [],
+    data.steps || []
+  ];
   const res = await query(sql, vals);
   return res.rows[0];
 }
@@ -104,7 +108,14 @@ async function updateRecipeDb(id, data) {
     WHERE id = $6
     RETURNING id, title, image_url AS "imageUrl", category, ingredients, steps
   `;
-  const vals = [data.title, data.imageUrl || null, data.category || null, data.ingredients || [], data.steps || [], id];
+  const vals = [
+    data.title,
+    data.imageUrl || null,
+    data.category || null,
+    data.ingredients || [],
+    data.steps || [],
+    id
+  ];
   const res = await query(sql, vals);
   return res.rows[0];
 }
@@ -113,6 +124,20 @@ async function deleteRecipeDb(id) {
   await query('DELETE FROM recipes WHERE id = $1', [id]);
   return { ok: true, id };
 }
+
+// --- Express setup ---
+const app = express();
+app.use(cors({ origin: FRONTEND_URL }));
+app.use(express.json());
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// fallback in-memory
+let recipesInMemory = [
+  { id: uuidv4(), title: 'Test Recipe 1', image_url: '', imageUrl: '', category: 'Dessert', ingredients: ['sugar', 'flour'], steps: ['Mix', 'Bake'] },
+  { id: uuidv4(), title: 'Test Recipe 2', image_url: '', imageUrl: '', category: 'Main', ingredients: ['chicken', 'salt'], steps: ['Season', 'Cook'] }
+];
 
 // --- Routes ---
 app.get('/recipes', async (req, res) => {
