@@ -1,45 +1,33 @@
-// backend/server.js
-import express from 'express';
-import cors from 'cors';
+// backend/migrate.js
 import { query, poolAvailable } from './db.js';
-import { FRONTEND_URL, PORT } from './config.js';
 
-const app = express();
-app.use(cors({ origin: FRONTEND_URL }));
-app.use(express.json());
-
-// GET all recipes
-app.get('/recipes', async (req, res) => {
-  if (!poolAvailable) return res.status(500).json({ error: 'Database not configured' });
+async function runMigrations() {
+  if (!poolAvailable) {
+    console.error('Database not configured');
+    process.exit(1);
+  }
 
   try {
-    const result = await query('SELECT * FROM recipes ORDER BY created_at DESC;');
-    res.json(result.rows);
+    console.log('Running migrations...');
+
+    // Таблица recipes (пример)
+    await query(`
+      CREATE TABLE IF NOT EXISTS recipes (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        title TEXT NOT NULL,
+        image_url TEXT,
+        ingredients JSONB,
+        steps JSONB,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    console.log('Migrations completed!');
+    process.exit(0);
   } catch (err) {
-    console.error('GET /recipes error', err);
-    res.status(500).json({ error: 'Failed to fetch recipes' });
+    console.error('Migration error:', err);
+    process.exit(1);
   }
-});
+}
 
-// POST create a recipe
-app.post('/recipes', async (req, res) => {
-  if (!poolAvailable) return res.status(500).json({ error: 'Database not configured' });
-
-  const { title, image_url, ingredients, steps } = req.body;
-
-  try {
-    const result = await query(
-      `INSERT INTO recipes (title, image_url, ingredients, steps) 
-       VALUES ($1, $2, $3, $4) RETURNING *;`,
-      [title, image_url || null, ingredients || [], steps || []]
-    );
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error('POST /recipes error', err);
-    res.status(500).json({ error: 'Failed to create recipe' });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`Backend listening on port ${PORT}  (poolAvailable=${poolAvailable})`);
-});
+runMigrations();

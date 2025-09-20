@@ -232,8 +232,14 @@ app.post('/upload', upload.single('image'), async (req, res) => {
 // Health check
 app.get('/', (req, res) => res.send('Backend is running!'));
 
-// Стартиране на сървъра
+// --- Стартиране на сървъра (единствената промяна за Render build) ---
 (async () => {
-  if (poolAvailable) await ensureRecipesTable();
-  app.listen(PORT, () => console.log(`Backend listening on port ${PORT}  (poolAvailable=${poolAvailable})`));
+  if (poolAvailable) {
+    // Стартиране на ensureRecipesTable без await, за да не блокира build-а
+    ensureRecipesTable().catch(err => console.error('Error ensuring recipes table:', err));
+  }
+
+  app.listen(PORT, () =>
+    console.log(`Backend listening on port ${PORT}  (poolAvailable=${poolAvailable})`)
+  );
 })();
