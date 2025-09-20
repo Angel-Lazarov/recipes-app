@@ -47,6 +47,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
     setError('');
     try {
       let imageUrl = preview;
+
       if (file) {
         const res = await uploadImage(file);
         imageUrl = res.url;
@@ -70,12 +71,10 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
     }
   };
 
+  if (!show) return null;
+
   return (
-    <form 
-      onSubmit={submit} 
-      className={show ? 'show' : ''} 
-      style={{ marginBottom: 20 }}
-    >
+    <form onSubmit={submit}>
       <label>Име на рецепта</label>
       <input 
         type="text" 
@@ -114,25 +113,16 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
       <label>Снимка (по избор)</label>
       <input type="file" accept="image/*" onChange={handleFileChange} />
 
-      {preview && (
-        <img 
-          src={preview} 
-          alt="Преглед" 
-          id="previewImage" 
-          style={{ marginTop: 10, maxWidth: 200, display: 'block' }}
-        />
-      )}
+      {preview && <img src={preview} alt="Преглед" />}
 
-      <div style={{ marginTop: 10 }}>
+      <div>
         <button type="submit" disabled={busy}>
           {busy ? (recipe ? 'Запазване...' : 'Добавяне...') : (recipe ? 'Запази' : 'Добави')}
         </button>
-        <button type="button" onClick={onCancel} style={{ marginLeft: 8 }}>
-          Отказ
-        </button>
+        <button type="button" onClick={onCancel}>Отказ</button>
       </div>
 
-      {error && <p style={{ color: 'red', marginTop: 6 }}>{error}</p>}
+      {error && <p>{error}</p>}
     </form>
   );
 }

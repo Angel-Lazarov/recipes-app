@@ -48,47 +48,36 @@ export default function Home() {
   });
 
   return (
-    <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
+    <div>
       <h1>📖 Моите рецепти</h1>
 
-      <button 
-        id="showFormBtn" 
-        onClick={() => setShowAdd(prev => !prev)} 
-        style={{ marginBottom: 20 }}
-      >
+      <button onClick={() => setShowAdd(prev => !prev)}>
         ➕ Добави нова рецепта
       </button>
 
-      {showAdd && !editing && (
-        <RecipeForm 
-          show={showAdd} 
-          onSaved={onSaved} 
-          onCancel={() => setShowAdd(false)} 
-        />
-      )}
+      <RecipeForm 
+        show={showAdd && !editing} 
+        onSaved={onSaved} 
+        onCancel={() => setShowAdd(false)} 
+      />
 
-      {editing && (
-        <RecipeForm 
-          show={!!editing} 
-          recipe={editing} 
-          onSaved={onSaved} 
-          onCancel={() => setEditing(null)} 
-        />
-      )}
+      <RecipeForm 
+        show={!!editing} 
+        recipe={editing} 
+        onSaved={onSaved} 
+        onCancel={() => setEditing(null)} 
+      />
 
-      <div style={{ marginBottom: 20 }}>
-        <h3>Филтри</h3>
+      <div>
         <input
           placeholder="Търси по име"
           value={filters.search}
           onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
-          style={{ marginRight: 8 }}
         />
         <input
           placeholder="Филтър по категория"
           value={filters.category}
           onChange={e => setFilters(prev => ({ ...prev, category: e.target.value }))}
-          style={{ marginRight: 8 }}
         />
         <input
           placeholder="Филтър по съставка"
@@ -98,18 +87,18 @@ export default function Home() {
       </div>
 
       {loading ? <p>Зареждане...</p> : (
-        <div id="recipeList">
+        <div>
           {filteredRecipes.map(r => (
-            <div key={r.id} className="recipe">
+            <div key={r.id}>
               <h3>{r.title}</h3>
               <p>Категория: {r.category}</p>
               {r.imageUrl && <img src={r.imageUrl} alt={r.title} />}
-              <div style={{ marginTop: 6 }}>
+              <div>
                 <button onClick={() => onDelete(r.id)}>Изтрий</button>
                 <button onClick={() => setEditing(r)}>Редактирай</button>
               </div>
               <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
-              <p><strong>Стъпки:</strong> <pre style={{ whiteSpace: 'pre-wrap' }}>{r.steps?.join('\n')}</pre></p>
+              <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
             </div>
           ))}
         </div>
