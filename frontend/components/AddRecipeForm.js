@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { uploadImage, createRecipe } from '../utils/api';
 
-export default function AddRecipeForm({ onAdded }) {
+export default function AddRecipeForm({ onAdded, onCancel, show }) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [ingredients, setIngredients] = useState('');
@@ -47,7 +47,7 @@ export default function AddRecipeForm({ onAdded }) {
   };
 
   return (
-    <form onSubmit={submit} style={{ marginBottom: 20 }}>
+    <form onSubmit={submit} className={show ? 'show' : ''} style={{ marginBottom: 20 }}>
       <div>
         <label>Title</label><br />
         <input value={title} onChange={e => setTitle(e.target.value)} required />
@@ -75,6 +75,7 @@ export default function AddRecipeForm({ onAdded }) {
 
       <div style={{ marginTop: 10 }}>
         <button type="submit" disabled={busy}>{busy ? 'Saving...' : 'Add Recipe'}</button>
+        <button type="button" onClick={onCancel} style={{ marginLeft: 8 }}>Cancel</button>
       </div>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}

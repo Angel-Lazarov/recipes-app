@@ -1,13 +1,13 @@
 // frontend/pages/index.js
 import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
-import AddRecipeForm from '../components/AddRecipeForm';
-import EditRecipeForm from '../components/EditRecipeForm';
+import RecipeForm from '../components/RecipeForm';
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
   const [filters, setFilters] = useState({ search: '', category: '', ingredient: '' });
 
   useEffect(() => {
@@ -20,7 +20,11 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
-  const onAdded = (r) => setRecipes(prev => [...prev, r]);
+  const onAdded = (r) => {
+    setRecipes(prev => [...prev, r]);
+    setShowAdd(false);
+  };
+
   const onUpdated = (r) => {
     setRecipes(prev => prev.map(p => p.id === r.id ? r : p));
     setEditing(null);
@@ -47,14 +51,27 @@ export default function Home() {
     <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
       <h1>Recipes</h1>
 
-      {editing ? (
-        <EditRecipeForm
+      <button id="showFormBtn" onClick={() => setShowAdd(prev => !prev)}>
+        {showAdd ? '➖ Hide Form' : '➕ Add New Recipe'}
+      </button>
+
+      {/* Add Form */}
+      {showAdd && !editing && (
+        <RecipeForm
+          show={showAdd}
+          onSaved={onAdded}
+          onCancel={() => setShowAdd(false)}
+        />
+      )}
+
+      {/* Edit Form */}
+      {editing && (
+        <RecipeForm
+          show={!!editing}
           recipe={editing}
-          onUpdated={onUpdated}
+          onSaved={onUpdated}
           onCancel={() => setEditing(null)}
         />
-      ) : (
-        <AddRecipeForm onAdded={onAdded} />
       )}
 
       <div style={{ marginBottom: 20 }}>
@@ -79,22 +96,23 @@ export default function Home() {
       </div>
 
       {loading ? <p>Loading...</p> : (
-        <ul>
+        <div id="recipeList">
           {filteredRecipes.map(r => (
-            <li key={r.id} style={{ marginBottom: 12 }}>
-              <strong>{r.title}</strong> ({r.category})<br />
-              {r.imageUrl && <img src={r.imageUrl} alt={r.title} width={160} style={{ display: 'block', marginTop: 6 }} />}
+            <div key={r.id} className="recipe">
+              <h3>{r.title}</h3>
+              <p>Category: {r.category}</p>
+              {r.imageUrl && <img src={r.imageUrl} alt={r.title} />}
               <div style={{ marginTop: 6 }}>
+                <button onClick={() => onDelete(r.id)}>Delete</button>
                 <button onClick={() => setEditing(r)}>Edit</button>
-                <button onClick={() => onDelete(r.id)} style={{ marginLeft: 8 }}>Delete</button>
               </div>
               <div style={{ marginTop: 6 }}>
                 <strong>Ingredients:</strong> {r.ingredients?.join(', ')}<br />
                 <strong>Steps:</strong> <pre style={{ whiteSpace: 'pre-wrap' }}>{r.steps?.join('\n')}</pre>
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

@@ -1,24 +1,15 @@
 // frontend/components/EditRecipeForm.js
-import { useState, useEffect } from 'react';
-import { uploadImage, updateRecipe } from '../utils/api';
+import { useState } from 'react';
+import { updateRecipe, uploadImage } from '../utils/api';
 
 export default function EditRecipeForm({ recipe, onUpdated, onCancel }) {
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('');
-  const [ingredients, setIngredients] = useState('');
-  const [steps, setSteps] = useState('');
+  const [title, setTitle] = useState(recipe.title);
+  const [category, setCategory] = useState(recipe.category || '');
+  const [ingredients, setIngredients] = useState(recipe.ingredients?.join(', ') || '');
+  const [steps, setSteps] = useState(recipe.steps?.join('\n') || '');
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (recipe) {
-      setTitle(recipe.title || '');
-      setCategory(recipe.category || '');
-      setIngredients((recipe.ingredients || []).join(', '));
-      setSteps((recipe.steps || []).join('\n'));
-    }
-  }, [recipe]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -31,7 +22,7 @@ export default function EditRecipeForm({ recipe, onUpdated, onCancel }) {
         imageUrl = uploadRes.url;
       }
 
-      const updatedRecipe = await updateRecipe(recipe.id, {
+      const updated = await updateRecipe(recipe.id, {
         title,
         category,
         ingredients: ingredients.split(',').map(i => i.trim()),
@@ -39,7 +30,7 @@ export default function EditRecipeForm({ recipe, onUpdated, onCancel }) {
         imageUrl
       });
 
-      onUpdated(updatedRecipe);
+      onUpdated(updated);
     } catch (err) {
       console.error(err);
       setError(err.message || 'Error');
@@ -48,11 +39,9 @@ export default function EditRecipeForm({ recipe, onUpdated, onCancel }) {
     }
   };
 
-  if (!recipe) return null;
-
   return (
-    <form onSubmit={submit} style={{ marginBottom: 20, border: '1px solid #ccc', padding: 10 }}>
-      <h3>Edit Recipe</h3>
+    <form onSubmit={submit} style={{ marginBottom: 20 }}>
+      <h3>✏️ Редактирай рецепта</h3>
 
       <div>
         <label>Title</label><br />
@@ -77,11 +66,22 @@ export default function EditRecipeForm({ recipe, onUpdated, onCancel }) {
       <div style={{ marginTop: 8 }}>
         <label>Image (optional)</label><br />
         <input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} />
+        {recipe.imageUrl && (
+          <div style={{ marginTop: 6 }}>
+            <img src={recipe.imageUrl} alt={recipe.title} width={120} />
+          </div>
+        )}
       </div>
 
       <div style={{ marginTop: 10 }}>
-        <button type="submit" disabled={busy}>{busy ? 'Saving...' : 'Update Recipe'}</button>
-        <button type="button" onClick={onCancel} style={{ marginLeft: 8 }}>Cancel</button>
+        <button type="submit" disabled={busy}>{busy ? 'Saving...' : 'Save'}</button>
+        <button
+          type="button"
+          onClick={onCancel}
+          style={{ marginLeft: 8, backgroundColor: '#ccc' }}
+        >
+          ❌ Отказ
+        </button>
       </div>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
