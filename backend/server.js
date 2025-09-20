@@ -9,20 +9,44 @@ import { poolAvailable, query } from './db.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
-
 app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json());
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// fallback in-memory (само ако база липсва)
+// fallback in-memory
 let recipesInMemory = [
   { id: uuidv4(), title: 'Test Recipe 1', image_url: '', imageUrl: '', category: 'Dessert', ingredients: ['sugar', 'flour'], steps: ['Mix', 'Bake'] },
   { id: uuidv4(), title: 'Test Recipe 2', image_url: '', imageUrl: '', category: 'Main', ingredients: ['chicken', 'salt'], steps: ['Season', 'Cook'] }
 ];
 
-// --- помощни функции (DB или in-memory) ---
+// --- Автоматично създаване на таблицата recipes ---
+async function ensureTables() {
+  if (!poolAvailable) return;
+
+  const sql = `
+    CREATE TABLE IF NOT EXISTS recipes (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      image_url TEXT,
+      category TEXT,
+      ingredients TEXT[],
+      steps TEXT[],
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    );
+  `;
+
+  try {
+    await query(sql);
+    console.log('Recipes table ensured.');
+  } catch (err) {
+    console.error('Failed to ensure tables:', err);
+  }
+}
+
+// --- DB helper функции ---
 async function getRecipesFromDb(filters = {}) {
   const where = [];
   const params = [];
@@ -80,8 +104,6 @@ async function deleteRecipeDb(id) {
 }
 
 // --- Routes ---
-
-// GET /recipes (supports search, category, ingredient)
 app.get('/recipes', async (req, res) => {
   try {
     const { search, category, ingredient } = req.query;
@@ -89,7 +111,6 @@ app.get('/recipes', async (req, res) => {
       const rows = await getRecipesFromDb({ search, category, ingredient });
       return res.json(rows);
     } else {
-      // fallback in-memory filtering
       const term = search?.toLowerCase() || '';
       const cat = category?.toLowerCase() || '';
       const ing = ingredient?.toLowerCase() || '';
@@ -97,7 +118,6 @@ app.get('/recipes', async (req, res) => {
       if (term) result = result.filter(r => r.title.toLowerCase().includes(term));
       if (cat) result = result.filter(r => (r.category || '').toLowerCase() === cat);
       if (ing) result = result.filter(r => (r.ingredients || []).some(i => i.toLowerCase().includes(ing)));
-      // normalize imageUrl name for frontend
       result = result.map(r => ({ ...r, imageUrl: r.image_url || r.imageUrl || '' }));
       return res.json(result);
     }
@@ -159,7 +179,7 @@ app.delete('/recipes/:id', async (req, res) => {
   }
 });
 
-// Upload към Catbox (същата логика както преди)
+// Upload към Catbox
 app.post('/upload', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file' });
 
@@ -194,4 +214,6 @@ app.post('/upload', upload.single('image'), async (req, res) => {
 // health
 app.get('/', (req, res) => res.send('Backend is running!'));
 
+// --- Стартиране на сървъра ---
+await ensureTables();
 app.listen(PORT, () => console.log(`Backend listening on port ${PORT}  (poolAvailable=${poolAvailable})`));
