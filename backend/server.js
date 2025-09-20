@@ -5,35 +5,57 @@ import fetch from 'node-fetch';
 import FormData from 'form-data';
 import cors from 'cors';
 import { PORT, CATBOX_USERHASH, FRONTEND_URL, DATABASE_URL } from './config.js';
-import { poolAvailable, query } from './db.js';
+import { Pool } from 'pg';
 import { v4 as uuidv4 } from 'uuid';
 
+const poolAvailable = !!DATABASE_URL;
+const pool = poolAvailable ? new Pool({ connectionString: DATABASE_URL }) : null;
+
+async function query(text, params) {
+  if (!pool) throw new Error('No database pool available');
+  return pool.query(text, params);
+}
+
+async function ensureRecipesTable() {
+  if (!pool) return;
+  // Създаваме таблицата, ако не съществува
+  await query(`
+    CREATE TABLE IF NOT EXISTS recipes (
+      id UUID PRIMARY KEY,
+      title TEXT,
+      image_url TEXT,
+      category TEXT,
+      ingredients TEXT[],
+      steps TEXT[],
+      created_at TIMESTAMP DEFAULT now(),
+      updated_at TIMESTAMP DEFAULT now()
+    );
+  `);
+  // Проверка и добавяне на липсващи колони
+  const cols = ['title', 'image_url', 'category', 'ingredients', 'steps', 'created_at', 'updated_at'];
+  for (const col of cols) {
+    await query(`
+      ALTER TABLE recipes
+      ADD COLUMN IF NOT EXISTS ${col} ${
+      col === 'ingredients' || col === 'steps' ? 'TEXT[]' : col.includes('at') ? 'TIMESTAMP DEFAULT now()' : 'TEXT'
+    };
+    `);
+  }
+  console.log('Recipes table ensured.');
+}
+
+// Express setup
 const app = express();
 app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json());
-
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// fallback in-memory (само ако база липсва)
+// fallback in-memory
 let recipesInMemory = [
   { id: uuidv4(), title: 'Test Recipe 1', image_url: '', imageUrl: '', category: 'Dessert', ingredients: ['sugar', 'flour'], steps: ['Mix', 'Bake'] },
   { id: uuidv4(), title: 'Test Recipe 2', image_url: '', imageUrl: '', category: 'Main', ingredients: ['chicken', 'salt'], steps: ['Season', 'Cook'] }
 ];
-
-// --- Ensure title column exists ---
-async function ensureTitleColumn() {
-  if (!poolAvailable) return;
-  try {
-    await query(`
-      ALTER TABLE recipes
-      ADD COLUMN IF NOT EXISTS title TEXT;
-    `);
-    console.log('Recipes table ensured.');
-  } catch (err) {
-    console.error('Failed to ensure title column:', err);
-  }
-}
 
 // --- DB helper functions ---
 async function getRecipesFromDb(filters = {}) {
@@ -66,11 +88,11 @@ async function getRecipesFromDb(filters = {}) {
 
 async function createRecipeDb(data) {
   const sql = `
-    INSERT INTO recipes (title, image_url, category, ingredients, steps)
-    VALUES ($1, $2, $3, $4, $5)
+    INSERT INTO recipes (id, title, image_url, category, ingredients, steps)
+    VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING id, title, image_url AS "imageUrl", category, ingredients, steps
   `;
-  const vals = [data.title, data.imageUrl || null, data.category || null, data.ingredients || [], data.steps || []];
+  const vals = [uuidv4(), data.title, data.imageUrl || null, data.category || null, data.ingredients || [], data.steps || []];
   const res = await query(sql, vals);
   return res.rows[0];
 }
@@ -100,10 +122,13 @@ app.get('/recipes', async (req, res) => {
       const rows = await getRecipesFromDb({ search, category, ingredient });
       return res.json(rows);
     } else {
+      const term = search?.toLowerCase() || '';
+      const cat = category?.toLowerCase() || '';
+      const ing = ingredient?.toLowerCase() || '';
       let result = recipesInMemory.slice();
-      if (search) result = result.filter(r => r.title.toLowerCase().includes(search.toLowerCase()));
-      if (category) result = result.filter(r => (r.category || '').toLowerCase() === category.toLowerCase());
-      if (ingredient) result = result.filter(r => (r.ingredients || []).some(i => i.toLowerCase().includes(ingredient.toLowerCase())));
+      if (term) result = result.filter(r => r.title.toLowerCase().includes(term));
+      if (cat) result = result.filter(r => (r.category || '').toLowerCase() === cat);
+      if (ing) result = result.filter(r => (r.ingredients || []).some(i => i.toLowerCase().includes(ing)));
       result = result.map(r => ({ ...r, imageUrl: r.image_url || r.imageUrl || '' }));
       return res.json(result);
     }
@@ -168,6 +193,7 @@ app.delete('/recipes/:id', async (req, res) => {
 // Upload към Catbox
 app.post('/upload', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file' });
+
   try {
     const form = new FormData();
     form.append('reqtype', 'fileupload');
@@ -177,7 +203,11 @@ app.post('/upload', upload.single('image'), async (req, res) => {
       contentType: req.file.mimetype
     });
 
-    const response = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: form });
+    const response = await fetch('https://catbox.moe/user/api.php', {
+      method: 'POST',
+      body: form
+    });
+
     if (!response.ok) {
       const text = await response.text();
       console.error('Catbox error:', response.status, text);
@@ -192,11 +222,11 @@ app.post('/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-// health
+// Health check
 app.get('/', (req, res) => res.send('Backend is running!'));
 
-// --- Start server ---
+// Стартиране на сървъра
 (async () => {
-  if (poolAvailable) await ensureTitleColumn();
+  if (poolAvailable) await ensureRecipesTable();
   app.listen(PORT, () => console.log(`Backend listening on port ${PORT}  (poolAvailable=${poolAvailable})`));
 })();
