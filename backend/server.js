@@ -17,7 +17,6 @@ async function query(text, params) {
 
 async function ensureRecipesTable() {
   if (!pool) return;
-
   await query(`
     CREATE TABLE IF NOT EXISTS recipes (
       id SERIAL PRIMARY KEY,
@@ -106,7 +105,7 @@ async function deleteRecipeDb(id) {
 // --- Express setup ---
 const app = express();
 
-// --- CORS middleware (преди всички маршрути) ---
+// --- CORS middleware ---
 app.use(cors({
   origin: FRONTEND_URL,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
