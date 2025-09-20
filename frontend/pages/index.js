@@ -98,12 +98,13 @@ export default function Home() {
               <h3>{r.title}</h3>
               <p>Категория: {r.category}</p>
               {r.imageUrl && <img src={r.imageUrl} alt={r.title} />}
-              <div>
+              <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
+              <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
+
+              <div className="buttons">
                 <button onClick={() => onDelete(r.id)}>Изтрий</button>
                 <button onClick={() => setEditing(r)}>Редактирай</button>
               </div>
-              <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
-              <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
             </div>
           ))}
         </div>
