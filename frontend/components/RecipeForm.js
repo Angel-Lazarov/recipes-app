@@ -123,7 +123,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
         <button type="button" onClick={onCancel}>Отказ</button>
       </div>
 
-      {error && <p>{error}</p>}
+      {error && <p className="error">{error}</p>}
     </form>
   );
 }
