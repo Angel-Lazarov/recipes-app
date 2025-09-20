@@ -5,85 +5,161 @@ import fetch from 'node-fetch';
 import FormData from 'form-data';
 import cors from 'cors';
 import { PORT, CATBOX_USERHASH, FRONTEND_URL } from './config.js';
+import { poolAvailable, query } from './db.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
 
-// CORS - позволява заявки само от фронтенда
 app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json());
 
-// Multer (в памет) за upload
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Прост in-memory масив за рецепти
-let recipes = [
-  {
-    id: uuidv4(),
-    title: 'Test Recipe 1',
-    imageUrl: '',
-    category: 'Dessert',
-    ingredients: ['Sugar', 'Flour'],
-    steps: ['Mix', 'Bake']
-  },
-  {
-    id: uuidv4(),
-    title: 'Test Recipe 2',
-    imageUrl: '',
-    category: 'Main',
-    ingredients: ['Chicken', 'Salt'],
-    steps: ['Season', 'Cook']
-  }
+// fallback in-memory (само ако база липсва)
+let recipesInMemory = [
+  { id: uuidv4(), title: 'Test Recipe 1', image_url: '', imageUrl: '', category: 'Dessert', ingredients: ['sugar', 'flour'], steps: ['Mix', 'Bake'] },
+  { id: uuidv4(), title: 'Test Recipe 2', image_url: '', imageUrl: '', category: 'Main', ingredients: ['chicken', 'salt'], steps: ['Season', 'Cook'] }
 ];
 
-// --- CRUD endpoints за рецепти ---
-// GET с филтър
-app.get('/recipes', (req, res) => {
-  let result = [...recipes];
-  const { search, category, ingredient } = req.query;
+// --- помощни функции (DB или in-memory) ---
+async function getRecipesFromDb(filters = {}) {
+  const where = [];
+  const params = [];
+  let idx = 1;
 
-  if (search) {
-    const term = search.toLowerCase();
-    result = result.filter(r => r.title.toLowerCase().includes(term));
+  if (filters.search) {
+    where.push(`lower(title) LIKE $${idx++}`);
+    params.push(`%${filters.search.toLowerCase()}%`);
+  }
+  if (filters.category) {
+    where.push(`lower(category) = $${idx++}`);
+    params.push(filters.category.toLowerCase());
+  }
+  if (filters.ingredient) {
+    where.push(`EXISTS (SELECT 1 FROM unnest(ingredients) i WHERE lower(i) LIKE $${idx++})`);
+    params.push(`%${filters.ingredient.toLowerCase()}%`);
   }
 
-  if (category) {
-    result = result.filter(r => r.category.toLowerCase() === category.toLowerCase());
+  const sql = `
+    SELECT id, title, image_url AS "imageUrl", category, ingredients, steps
+    FROM recipes
+    ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
+    ORDER BY created_at DESC
+  `;
+  const res = await query(sql, params);
+  return res.rows;
+}
+
+async function createRecipeDb(data) {
+  const sql = `
+    INSERT INTO recipes (title, image_url, category, ingredients, steps)
+    VALUES ($1, $2, $3, $4, $5)
+    RETURNING id, title, image_url AS "imageUrl", category, ingredients, steps
+  `;
+  const vals = [data.title, data.imageUrl || null, data.category || null, data.ingredients || [], data.steps || []];
+  const res = await query(sql, vals);
+  return res.rows[0];
+}
+
+async function updateRecipeDb(id, data) {
+  const sql = `
+    UPDATE recipes
+    SET title = $1, image_url = $2, category = $3, ingredients = $4, steps = $5, updated_at = now()
+    WHERE id = $6
+    RETURNING id, title, image_url AS "imageUrl", category, ingredients, steps
+  `;
+  const vals = [data.title, data.imageUrl || null, data.category || null, data.ingredients || [], data.steps || [], id];
+  const res = await query(sql, vals);
+  return res.rows[0];
+}
+
+async function deleteRecipeDb(id) {
+  await query('DELETE FROM recipes WHERE id = $1', [id]);
+  return { ok: true, id };
+}
+
+// --- Routes ---
+
+// GET /recipes (supports search, category, ingredient)
+app.get('/recipes', async (req, res) => {
+  try {
+    const { search, category, ingredient } = req.query;
+    if (poolAvailable) {
+      const rows = await getRecipesFromDb({ search, category, ingredient });
+      return res.json(rows);
+    } else {
+      // fallback in-memory filtering
+      const term = search?.toLowerCase() || '';
+      const cat = category?.toLowerCase() || '';
+      const ing = ingredient?.toLowerCase() || '';
+      let result = recipesInMemory.slice();
+      if (term) result = result.filter(r => r.title.toLowerCase().includes(term));
+      if (cat) result = result.filter(r => (r.category || '').toLowerCase() === cat);
+      if (ing) result = result.filter(r => (r.ingredients || []).some(i => i.toLowerCase().includes(ing)));
+      // normalize imageUrl name for frontend
+      result = result.map(r => ({ ...r, imageUrl: r.image_url || r.imageUrl || '' }));
+      return res.json(result);
+    }
+  } catch (err) {
+    console.error('GET /recipes error', err);
+    res.status(500).json({ error: 'Server error' });
   }
+});
 
-  if (ingredient) {
-    const term = ingredient.toLowerCase();
-    result = result.filter(r =>
-      r.ingredients.some(i => i.toLowerCase().includes(term))
-    );
+app.post('/recipes', async (req, res) => {
+  try {
+    const { title, imageUrl = '', category = '', ingredients = [], steps = [] } = req.body;
+    if (poolAvailable) {
+      const row = await createRecipeDb({ title, imageUrl, category, ingredients, steps });
+      return res.status(201).json(row);
+    } else {
+      const newRecipe = { id: uuidv4(), title, imageUrl, category, ingredients, steps };
+      recipesInMemory.push(newRecipe);
+      return res.status(201).json(newRecipe);
+    }
+  } catch (err) {
+    console.error('POST /recipes error', err);
+    res.status(500).json({ error: 'Server error' });
   }
-
-  res.json(result);
 });
 
-app.post('/recipes', (req, res) => {
-  const { title, imageUrl = '', category = '', ingredients = [], steps = [] } = req.body;
-  const newRecipe = { id: uuidv4(), title, imageUrl, category, ingredients, steps };
-  recipes.push(newRecipe);
-  res.status(201).json(newRecipe);
+app.put('/recipes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (poolAvailable) {
+      const updated = await updateRecipeDb(id, req.body);
+      if (!updated) return res.status(404).json({ error: 'Not found' });
+      return res.json(updated);
+    } else {
+      const idx = recipesInMemory.findIndex(r => r.id === id);
+      if (idx === -1) return res.status(404).json({ error: 'Not found' });
+      recipesInMemory[idx] = { ...recipesInMemory[idx], ...req.body };
+      return res.json(recipesInMemory[idx]);
+    }
+  } catch (err) {
+    console.error('PUT /recipes/:id error', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-app.put('/recipes/:id', (req, res) => {
-  const { id } = req.params;
-  const idx = recipes.findIndex(r => r.id === id);
-  if (idx === -1) return res.status(404).json({ error: 'Not found' });
-  recipes[idx] = { ...recipes[idx], ...req.body };
-  res.json(recipes[idx]);
+app.delete('/recipes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (poolAvailable) {
+      await deleteRecipeDb(id);
+      return res.json({ ok: true, id });
+    } else {
+      recipesInMemory = recipesInMemory.filter(r => r.id !== id);
+      return res.json({ ok: true, id });
+    }
+  } catch (err) {
+    console.error('DELETE /recipes/:id error', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-app.delete('/recipes/:id', (req, res) => {
-  const { id } = req.params;
-  recipes = recipes.filter(r => r.id !== id);
-  res.json({ ok: true, id });
-});
-
-// --- Upload към Catbox ---
+// Upload към Catbox (същата логика както преди)
 app.post('/upload', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file' });
 
@@ -118,5 +194,4 @@ app.post('/upload', upload.single('image'), async (req, res) => {
 // health
 app.get('/', (req, res) => res.send('Backend is running!'));
 
-// start
-app.listen(PORT, () => console.log(`Backend listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`Backend listening on port ${PORT}  (poolAvailable=${poolAvailable})`));
