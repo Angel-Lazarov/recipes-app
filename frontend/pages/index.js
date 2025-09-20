@@ -1,4 +1,3 @@
-// frontend/pages/index.js
 import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
@@ -12,7 +11,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchRecipes()
-      .then(data => setRecipes(data))
+      .then(setRecipes)
       .catch(err => {
         console.error(err);
         setRecipes([]);
@@ -20,14 +19,17 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
-  const onAdded = (r) => {
-    setRecipes(prev => [...prev, r]);
-    setShowAdd(false);
-  };
-
-  const onUpdated = (r) => {
-    setRecipes(prev => prev.map(p => p.id === r.id ? r : p));
+  const onSaved = (r) => {
+    setRecipes(prev => {
+      const idx = prev.findIndex(p => p.id === r.id);
+      if (idx !== -1) {
+        prev[idx] = r;
+        return [...prev];
+      }
+      return [...prev, r];
+    });
     setEditing(null);
+    setShowAdd(false);
   };
 
   const onDelete = async (id) => {
@@ -43,7 +45,7 @@ export default function Home() {
   const filteredRecipes = recipes.filter(r => {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
     const categoryMatch = r.category?.toLowerCase().includes(filters.category.toLowerCase());
-    const ingredientMatch = filters.ingredient === '' || r.ingredients?.some(i => i.toLowerCase().includes(filters.ingredient.toLowerCase()));
+    const ingredientMatch = !filters.ingredient || r.ingredients?.some(i => i.toLowerCase().includes(filters.ingredient.toLowerCase()));
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
@@ -51,25 +53,21 @@ export default function Home() {
     <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
       <h1>Recipes</h1>
 
-      <button id="showFormBtn" onClick={() => setShowAdd(prev => !prev)}>
-        {showAdd ? '➖ Hide Form' : '➕ Add New Recipe'}
-      </button>
+      <button onClick={() => setShowAdd(true)} style={{ marginBottom: 15 }}>➕ Add New Recipe</button>
 
-      {/* Add Form */}
       {showAdd && !editing && (
-        <RecipeForm
-          show={showAdd}
-          onSaved={onAdded}
-          onCancel={() => setShowAdd(false)}
+        <RecipeForm 
+          show={showAdd} 
+          onSaved={onSaved} 
+          onCancel={() => setShowAdd(false)} 
         />
       )}
 
-      {/* Edit Form */}
       {editing && (
         <RecipeForm
           show={!!editing}
           recipe={editing}
-          onSaved={onUpdated}
+          onSaved={onSaved}
           onCancel={() => setEditing(null)}
         />
       )}
@@ -96,23 +94,22 @@ export default function Home() {
       </div>
 
       {loading ? <p>Loading...</p> : (
-        <div id="recipeList">
+        <ul style={{ padding: 0, listStyle: 'none' }}>
           {filteredRecipes.map(r => (
-            <div key={r.id} className="recipe">
-              <h3>{r.title}</h3>
-              <p>Category: {r.category}</p>
-              {r.imageUrl && <img src={r.imageUrl} alt={r.title} />}
+            <li key={r.id} style={{ marginBottom: 12 }}>
+              <strong>{r.title}</strong> ({r.category})<br />
+              {r.imageUrl && <img src={r.imageUrl} alt={r.title} width={160} style={{ display: 'block', marginTop: 6 }} />}
               <div style={{ marginTop: 6 }}>
-                <button onClick={() => onDelete(r.id)}>Delete</button>
                 <button onClick={() => setEditing(r)}>Edit</button>
+                <button onClick={() => onDelete(r.id)} style={{ marginLeft: 8 }}>Delete</button>
               </div>
               <div style={{ marginTop: 6 }}>
                 <strong>Ingredients:</strong> {r.ingredients?.join(', ')}<br />
                 <strong>Steps:</strong> <pre style={{ whiteSpace: 'pre-wrap' }}>{r.steps?.join('\n')}</pre>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

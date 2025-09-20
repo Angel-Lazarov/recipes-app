@@ -1,4 +1,3 @@
-// frontend/components/RecipeForm.js
 import { useState, useEffect } from 'react';
 import { uploadImage, createRecipe, updateRecipe } from '../utils/api';
 
@@ -8,32 +7,37 @@ export default function RecipeForm({ show = false, recipe = null, onSaved, onCan
   const [ingredients, setIngredients] = useState('');
   const [steps, setSteps] = useState('');
   const [file, setFile] = useState(null);
-  const [imageUrl, setImageUrl] = useState('');
+  const [preview, setPreview] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  // Попълване на формата при edit
   useEffect(() => {
     if (recipe) {
       setTitle(recipe.title || '');
       setCategory(recipe.category || '');
       setIngredients((recipe.ingredients || []).join(', '));
       setSteps((recipe.steps || []).join('\n'));
-      setImageUrl(recipe.imageUrl || '');
+      setPreview(recipe.imageUrl || '');
+      setFile(null);
+    } else {
+      setTitle('');
+      setCategory('');
+      setIngredients('');
+      setSteps('');
+      setPreview('');
       setFile(null);
     }
-  }, [recipe]);
+  }, [recipe, show]);
 
   const submit = async (e) => {
     e.preventDefault();
     setError('');
     setBusy(true);
-
     try {
-      let uploadedUrl = imageUrl;
+      let imageUrl = preview;
       if (file) {
-        const uploadRes = await uploadImage(file);
-        uploadedUrl = uploadRes.url;
+        const res = await uploadImage(file);
+        imageUrl = res.url;
       }
 
       const data = {
@@ -41,27 +45,24 @@ export default function RecipeForm({ show = false, recipe = null, onSaved, onCan
         category,
         ingredients: ingredients.split(',').map(i => i.trim()),
         steps: steps.split('\n').map(s => s.trim()),
-        imageUrl: uploadedUrl
+        imageUrl
       };
 
-      let savedRecipe;
+      let saved;
       if (recipe) {
-        savedRecipe = await updateRecipe(recipe.id, data);
+        saved = await updateRecipe(recipe.id, data);
       } else {
-        savedRecipe = await createRecipe(data);
+        saved = await createRecipe(data);
       }
 
-      onSaved(savedRecipe);
+      onSaved(saved);
 
-      // нулиране на формата след добавяне
-      if (!recipe) {
-        setTitle('');
-        setCategory('');
-        setIngredients('');
-        setSteps('');
-        setFile(null);
-        setImageUrl('');
-      }
+      setTitle('');
+      setCategory('');
+      setIngredients('');
+      setSteps('');
+      setFile(null);
+      setPreview('');
     } catch (err) {
       console.error(err);
       setError(err.message || 'Error');
@@ -75,17 +76,15 @@ export default function RecipeForm({ show = false, recipe = null, onSaved, onCan
     setFile(f);
     if (f) {
       const reader = new FileReader();
-      reader.onload = (ev) => setImageUrl(ev.target.result);
+      reader.onload = () => setPreview(reader.result);
       reader.readAsDataURL(f);
+    } else {
+      setPreview('');
     }
   };
 
   return (
-    <form
-      onSubmit={submit}
-      className={show ? 'show' : ''}
-      style={{ marginBottom: 20 }}
-    >
+    <form onSubmit={submit} className={show ? 'show' : ''} style={{ marginBottom: 20 }}>
       <div>
         <label>Title</label>
         <input value={title} onChange={e => setTitle(e.target.value)} required />
@@ -109,13 +108,12 @@ export default function RecipeForm({ show = false, recipe = null, onSaved, onCan
       <div>
         <label>Image (optional)</label>
         <input type="file" accept="image/*" onChange={handleFileChange} />
-        {imageUrl && <img src={imageUrl} alt="Preview" style={{ maxWidth: 150, marginTop: 10 }} />}
       </div>
 
-      <div>
-        <button type="submit" disabled={busy}>
-          {busy ? (recipe ? 'Saving...' : 'Adding...') : (recipe ? 'Save' : 'Add Recipe')}
-        </button>
+      {preview && <img src={preview} alt="Preview" style={{ width: 160, marginTop: 6 }} />}
+
+      <div style={{ marginTop: 10 }}>
+        <button type="submit" disabled={busy}>{busy ? 'Saving...' : recipe ? 'Save' : 'Add Recipe'}</button>
         <button type="button" onClick={onCancel} style={{ marginLeft: 8 }}>Cancel</button>
       </div>
 
