@@ -1,3 +1,4 @@
+/* =================== Основен стил =================== */
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
@@ -6,6 +7,7 @@ body {
     font-size: 16px;
 }
 
+/* =================== Бутон добавяне =================== */
 #showFormBtn {
     background-color: #007bff;
     color: white;
@@ -19,16 +21,16 @@ body {
 }
 #showFormBtn:hover { background-color: #0056b3; }
 
-/* Плавно разпъване на формата */
+/* =================== Формата =================== */
 form {
     border: 1px solid #ddd;
-    padding: 0; /* padding ще се анимира */
+    padding: 0;                 /* започва скрито */
     margin-bottom: 20px;
     border-radius: 12px;
     background-color: #fff;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    max-height: 0;
-    opacity: 0;
+    max-height: 0;              /* скрито по подразбиране */
+    opacity: 0;                 /* скрито по подразбиране */
     overflow: hidden;
     transition: max-height 0.5s ease, opacity 0.5s ease, padding 0.3s ease;
 }
@@ -39,7 +41,12 @@ form.show {
     padding: 20px;
 }
 
-form label { display: block; margin-top: 10px; font-weight: bold; font-size: 16px; }
+form label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 16px;
+}
 
 form input, form textarea, form select, form button {
     display: block;
@@ -71,18 +78,7 @@ form button {
 form button:hover { background-color: #0056b3; }
 form button:active { transform: scale(0.98); }
 
-/* Превю на снимка при добавяне/редакция */
-#previewImage {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-top: 8px;
-    display: block;
-    transition: transform 0.3s ease;
-}
-
-/* Търсене и филтри */
+/* =================== Търсене и филтри =================== */
 .search-container, .filter-container {
     position: relative;
     display: inline-block;
@@ -105,7 +101,7 @@ form button:active { transform: scale(0.98); }
 }
 .clear-btn:hover { color: #000; }
 
-/* Списък с рецепти */
+/* =================== Списък с рецепти =================== */
 #recipeList {
     display: flex;
     flex-wrap: wrap;
@@ -133,7 +129,7 @@ form button:active { transform: scale(0.98); }
 .recipe h3 { font-size: 18px; margin-bottom: 6px; color: #007bff; }
 .recipe p { font-size: 14px; margin: 4px 0; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
-.recipe img {
+.recipe img, #previewImage {
     width: 100%;
     height: 180px;
     object-fit: cover;
@@ -166,12 +162,12 @@ form button:active { transform: scale(0.98); }
     .recipe img { height: 160px; }
 }
 
-/* Спинър за качване на изображение */
+/* =================== Спинър =================== */
 #loadingSpinner {
     display: none;
     margin: 10px auto;
-    border: 5px solid #f3f3f3; /* светлосив фон */
-    border-top: 5px solid #3498db; /* синята част */
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
     border-radius: 50%;
     width: 40px;
     height: 40px;

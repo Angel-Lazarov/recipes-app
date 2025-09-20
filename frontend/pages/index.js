@@ -1,3 +1,4 @@
+// frontend/pages/index.js
 import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
@@ -11,7 +12,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchRecipes()
-      .then(setRecipes)
+      .then(data => setRecipes(data))
       .catch(err => {
         console.error(err);
         setRecipes([]);
@@ -20,16 +21,14 @@ export default function Home() {
   }, []);
 
   const onSaved = (r) => {
-    setRecipes(prev => {
-      const idx = prev.findIndex(p => p.id === r.id);
-      if (idx !== -1) {
-        prev[idx] = r;
-        return [...prev];
-      }
-      return [...prev, r];
-    });
-    setEditing(null);
-    setShowAdd(false);
+    const exists = recipes.find(p => p.id === r.id);
+    if (exists) {
+      setRecipes(prev => prev.map(p => p.id === r.id ? r : p));
+      setEditing(null);
+    } else {
+      setRecipes(prev => [...prev, r]);
+      setShowAdd(false);
+    }
   };
 
   const onDelete = async (id) => {
@@ -38,22 +37,28 @@ export default function Home() {
       setRecipes(prev => prev.filter(p => p.id !== id));
     } catch (err) {
       console.error(err);
-      alert('Delete failed');
+      alert('Грешка при изтриване');
     }
   };
 
   const filteredRecipes = recipes.filter(r => {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
     const categoryMatch = r.category?.toLowerCase().includes(filters.category.toLowerCase());
-    const ingredientMatch = !filters.ingredient || r.ingredients?.some(i => i.toLowerCase().includes(filters.ingredient.toLowerCase()));
+    const ingredientMatch = filters.ingredient === '' || r.ingredients?.some(i => i.toLowerCase().includes(filters.ingredient.toLowerCase()));
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
   return (
     <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
-      <h1>Recipes</h1>
+      <h1>📖 Моите рецепти</h1>
 
-      <button onClick={() => setShowAdd(true)} style={{ marginBottom: 15 }}>➕ Add New Recipe</button>
+      <button 
+        id="showFormBtn" 
+        onClick={() => setShowAdd(prev => !prev)} 
+        style={{ marginBottom: 20 }}
+      >
+        ➕ Добави нова рецепта
+      </button>
 
       {showAdd && !editing && (
         <RecipeForm 
@@ -64,52 +69,51 @@ export default function Home() {
       )}
 
       {editing && (
-        <RecipeForm
-          show={!!editing}
-          recipe={editing}
-          onSaved={onSaved}
-          onCancel={() => setEditing(null)}
+        <RecipeForm 
+          show={!!editing} 
+          recipe={editing} 
+          onSaved={onSaved} 
+          onCancel={() => setEditing(null)} 
         />
       )}
 
       <div style={{ marginBottom: 20 }}>
-        <h3>Filters</h3>
+        <h3>Филтри</h3>
         <input
-          placeholder="Search by name"
+          placeholder="Търси по име"
           value={filters.search}
           onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
           style={{ marginRight: 8 }}
         />
         <input
-          placeholder="Filter by category"
+          placeholder="Филтър по категория"
           value={filters.category}
           onChange={e => setFilters(prev => ({ ...prev, category: e.target.value }))}
           style={{ marginRight: 8 }}
         />
         <input
-          placeholder="Filter by ingredient"
+          placeholder="Филтър по съставка"
           value={filters.ingredient}
           onChange={e => setFilters(prev => ({ ...prev, ingredient: e.target.value }))}
         />
       </div>
 
-      {loading ? <p>Loading...</p> : (
-        <ul style={{ padding: 0, listStyle: 'none' }}>
+      {loading ? <p>Зареждане...</p> : (
+        <div id="recipeList">
           {filteredRecipes.map(r => (
-            <li key={r.id} style={{ marginBottom: 12 }}>
-              <strong>{r.title}</strong> ({r.category})<br />
-              {r.imageUrl && <img src={r.imageUrl} alt={r.title} width={160} style={{ display: 'block', marginTop: 6 }} />}
+            <div key={r.id} className="recipe">
+              <h3>{r.title}</h3>
+              <p>Категория: {r.category}</p>
+              {r.imageUrl && <img src={r.imageUrl} alt={r.title} />}
               <div style={{ marginTop: 6 }}>
-                <button onClick={() => setEditing(r)}>Edit</button>
-                <button onClick={() => onDelete(r.id)} style={{ marginLeft: 8 }}>Delete</button>
+                <button onClick={() => onDelete(r.id)}>Изтрий</button>
+                <button onClick={() => setEditing(r)}>Редактирай</button>
               </div>
-              <div style={{ marginTop: 6 }}>
-                <strong>Ingredients:</strong> {r.ingredients?.join(', ')}<br />
-                <strong>Steps:</strong> <pre style={{ whiteSpace: 'pre-wrap' }}>{r.steps?.join('\n')}</pre>
-              </div>
-            </li>
+              <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
+              <p><strong>Стъпки:</strong> <pre style={{ whiteSpace: 'pre-wrap' }}>{r.steps?.join('\n')}</pre></p>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
