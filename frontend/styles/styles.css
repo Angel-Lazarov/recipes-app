@@ -1,4 +1,4 @@
-/* frontend/styles.css - финална версия с центрирани заглавия, по-мек фон и бутоните в дъното на картите */
+/* frontend/styles.css - финална версия за форма и карти */
 
 /* Основни стилове */
 body {
@@ -16,7 +16,7 @@ h1 {
     margin-bottom: 20px;
 }
 
-/* Бутон за добавяне рецепта */
+/* Бутон за показване на формата */
 #showFormBtn {
     background-color: #4a90e2;
     color: white;
@@ -33,7 +33,97 @@ h1 {
     transform: translateY(-2px);
 }
 
-/* Списък с рецепти */
+/* --- ФОРМА --- */
+form {
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid #ccc;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    background-color: #fff;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+form label {
+    font-weight: bold;
+}
+
+form input[type="text"],
+form textarea,
+form input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+form input:focus,
+form textarea:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 4px rgba(74,144,226,0.4);
+}
+
+/* Preview на изображението */
+form img {
+    max-width: 100%;
+    max-height: 250px;
+    width: auto;
+    height: auto;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-top: 8px;
+    transition: transform 0.2s ease;
+}
+
+form img:hover {
+    transform: scale(1.02);
+}
+
+/* Бутоните във формата */
+form button {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+form button[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+}
+
+form button[type="submit"]:hover {
+    background-color: #3e8e41;
+    transform: translateY(-2px);
+}
+
+form button[type="button"] {
+    background-color: #f08080;
+    color: white;
+    margin-left: 8px;
+}
+
+form button[type="button"]:hover {
+    background-color: #d97373;
+    transform: translateY(-2px);
+}
+
+/* Грешки във формата */
+p.error {
+    color: #d9534f;
+    margin-top: 8px;
+}
+
+/* --- СПИСЪК С РЕЦЕПТИ --- */
 #recipeList {
     display: flex;
     flex-wrap: wrap;
@@ -43,7 +133,7 @@ h1 {
     max-width: 1200px;
 }
 
-/* Отделна рецепта */
+/* Карта на рецепта */
 .recipe {
     border: 1px solid #ddd;
     border-radius: 12px;
@@ -51,7 +141,7 @@ h1 {
     width: 280px;
     display: flex;
     flex-direction: column;
-    background-color: #fefefe; /* по-мек фон */
+    background-color: #fefefe; /* мек фон */
     box-sizing: border-box;
     transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -84,15 +174,15 @@ h1 {
     border-radius: 6px;
 }
 
-/* Контейнер за бутоните */
+/* Контейнер за бутоните в картата */
 .recipe .buttons {
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin-top: auto; /* изтласква бутоните към дъното на картата */
+    margin-top: auto; /* изтласква бутоните към дъното */
 }
 
-/* Бутоните на картите – по-меко визуално */
+/* Бутоните на картите */
 .recipe button {
     padding: 8px 12px;
     border-radius: 6px;
@@ -120,7 +210,7 @@ h1 {
     background-color: #66a57f;
 }
 
-/* Адаптивност за мобилни устройства */
+/* --- Адаптивност --- */
 @media (max-width: 768px) {
     #recipeList {
         flex-direction: column;
@@ -128,6 +218,10 @@ h1 {
     }
 
     .recipe {
+        width: 90%;
+    }
+
+    form {
         width: 90%;
     }
 }
