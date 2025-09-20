@@ -15,6 +15,7 @@ async function query(text, params) {
   return pool.query(text, params);
 }
 
+// --- Reset and create table ---
 async function ensureRecipesTable() {
   if (!pool) return;
   await query(`
@@ -30,6 +31,18 @@ async function ensureRecipesTable() {
     );
   `);
   console.log('Recipes table ensured.');
+}
+
+async function resetRecipesTable() {
+  if (!pool) return;
+  try {
+    await query('DROP TABLE IF EXISTS recipes;');
+    console.log('Old recipes table dropped.');
+    await ensureRecipesTable();
+    console.log('New recipes table created.');
+  } catch (err) {
+    console.error('Error resetting recipes table:', err);
+  }
 }
 
 // DB helpers
@@ -234,7 +247,7 @@ app.get('/', (req, res) => res.send('Backend is running!'));
 // --- Стартиране на сървъра ---
 (async () => {
   if (poolAvailable) {
-    ensureRecipesTable().catch(err => console.error('Error ensuring recipes table:', err));
+    await resetRecipesTable(); // <--- тук нулираме таблицата
   }
 
   app.listen(PORT, () =>
