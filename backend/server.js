@@ -107,9 +107,11 @@ async function deleteRecipeDb(id) {
 // --- Express setup ---
 const app = express();
 
-// Настройка на CORS
+// --- CORS middleware ---
 app.use(cors({
-  origin: FRONTEND_URL || '*'
+  origin: FRONTEND_URL, // https://recipes-app-frontend.onrender.com
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  credentials: true
 }));
 
 app.use(express.json());
@@ -232,10 +234,9 @@ app.post('/upload', upload.single('image'), async (req, res) => {
 // Health check
 app.get('/', (req, res) => res.send('Backend is running!'));
 
-// --- Стартиране на сървъра (единствената промяна за Render build) ---
+// --- Стартиране на сървъра (Render-safe) ---
 (async () => {
   if (poolAvailable) {
-    // Стартиране на ensureRecipesTable без await, за да не блокира build-а
     ensureRecipesTable().catch(err => console.error('Error ensuring recipes table:', err));
   }
 
