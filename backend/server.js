@@ -30,11 +30,10 @@ async function ensureRecipesTable() {
       updated_at TIMESTAMP DEFAULT now()
     );
   `);
-
   console.log('Recipes table ensured.');
 }
 
-// --- DB helper functions ---
+// DB helpers
 async function getRecipesFromDb(filters = {}) {
   const where = [];
   const params = [];
@@ -107,15 +106,14 @@ async function deleteRecipeDb(id) {
 // --- Express setup ---
 const app = express();
 
-// --- CORS middleware (правилен) ---
+// --- CORS middleware (преди всички маршрути) ---
 app.use(cors({
-  origin: FRONTEND_URL, // https://recipes-app-frontend.onrender.com
+  origin: FRONTEND_URL,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   credentials: true
 }));
 
 app.use(express.json());
-
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
