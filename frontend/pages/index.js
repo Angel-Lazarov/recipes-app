@@ -1,3 +1,4 @@
+// frontend/pages/index.js
 import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
@@ -55,18 +56,22 @@ export default function Home() {
         ➕ Добави нова рецепта
       </button>
 
-      <RecipeForm 
-        show={showAdd && !editing} 
-        onSaved={onSaved} 
-        onCancel={() => setShowAdd(false)} 
-      />
+      {showAdd && !editing && (
+        <RecipeForm 
+          show={showAdd} 
+          onSaved={onSaved} 
+          onCancel={() => setShowAdd(false)} 
+        />
+      )}
 
-      <RecipeForm 
-        show={!!editing} 
-        recipe={editing} 
-        onSaved={onSaved} 
-        onCancel={() => setEditing(null)} 
-      />
+      {editing && (
+        <RecipeForm 
+          show={!!editing} 
+          recipe={editing} 
+          onSaved={onSaved} 
+          onCancel={() => setEditing(null)} 
+        />
+      )}
 
       <div>
         <input
