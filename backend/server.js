@@ -18,7 +18,6 @@ async function query(text, params) {
 async function ensureRecipesTable() {
   if (!pool) return;
 
-  // Таблицата трябва да има serial integer id
   await query(`
     CREATE TABLE IF NOT EXISTS recipes (
       id SERIAL PRIMARY KEY,
@@ -31,6 +30,7 @@ async function ensureRecipesTable() {
       updated_at TIMESTAMP DEFAULT now()
     );
   `);
+
   console.log('Recipes table ensured.');
 }
 
@@ -106,7 +106,12 @@ async function deleteRecipeDb(id) {
 
 // --- Express setup ---
 const app = express();
-app.use(cors({ origin: FRONTEND_URL }));
+
+// Настройка на CORS
+app.use(cors({
+  origin: FRONTEND_URL || '*'
+}));
+
 app.use(express.json());
 
 const storage = multer.memoryStorage();
@@ -126,13 +131,10 @@ app.get('/recipes', async (req, res) => {
       const rows = await getRecipesFromDb({ search, category, ingredient });
       return res.json(rows);
     } else {
-      const term = search?.toLowerCase() || '';
-      const cat = category?.toLowerCase() || '';
-      const ing = ingredient?.toLowerCase() || '';
       let result = recipesInMemory.slice();
-      if (term) result = result.filter(r => r.title.toLowerCase().includes(term));
-      if (cat) result = result.filter(r => (r.category || '').toLowerCase() === cat);
-      if (ing) result = result.filter(r => (r.ingredients || []).some(i => i.toLowerCase().includes(ing)));
+      if (search) result = result.filter(r => r.title.toLowerCase().includes(search.toLowerCase()));
+      if (category) result = result.filter(r => (r.category || '').toLowerCase() === category.toLowerCase());
+      if (ingredient) result = result.filter(r => (r.ingredients || []).some(i => i.toLowerCase().includes(ingredient.toLowerCase())));
       result = result.map(r => ({ ...r, imageUrl: r.image_url || r.imageUrl || '' }));
       return res.json(result);
     }
