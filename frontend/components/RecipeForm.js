@@ -47,7 +47,6 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
     setError('');
     try {
       let imageUrl = preview;
-
       if (file) {
         const res = await uploadImage(file);
         imageUrl = res.url;
@@ -76,39 +75,16 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   return (
     <form onSubmit={submit}>
       <label>Име на рецепта</label>
-      <input 
-        type="text" 
-        value={title} 
-        placeholder="Име на рецептата" 
-        onChange={e => setTitle(e.target.value)} 
-        required 
-      />
+      <input type="text" value={title} placeholder="Име на рецептата" onChange={e => setTitle(e.target.value)} required />
 
       <label>Категория</label>
-      <input 
-        type="text" 
-        value={category} 
-        placeholder="Например: Супа, Десерт..." 
-        onChange={e => setCategory(e.target.value)} 
-        required 
-      />
+      <input type="text" value={category} placeholder="Например: Супа, Десерт..." onChange={e => setCategory(e.target.value)} required />
 
       <label>Съставки (разделени със запетаи)</label>
-      <input 
-        type="text" 
-        value={ingredients} 
-        placeholder="Например: захар, брашно, яйца" 
-        onChange={e => setIngredients(e.target.value)} 
-        required 
-      />
+      <input type="text" value={ingredients} placeholder="Например: захар, брашно, яйца" onChange={e => setIngredients(e.target.value)} required />
 
       <label>Стъпки (нов ред за всяка стъпка)</label>
-      <textarea 
-        value={steps} 
-        placeholder="Например: Смесете съставките..." 
-        onChange={e => setSteps(e.target.value)} 
-        required 
-      />
+      <textarea value={steps} placeholder="Например: Смесете съставките..." onChange={e => setSteps(e.target.value)} required />
 
       <label>Снимка (по избор)</label>
       <input type="file" accept="image/*" onChange={handleFileChange} />
@@ -116,9 +92,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
       {preview && <img src={preview} alt="Преглед" />}
 
       <div>
-        <button type="submit" disabled={busy}>
-          {busy ? (recipe ? 'Запазване...' : 'Добавяне...') : (recipe ? 'Запази' : 'Добави')}
-        </button>
+        <button type="submit" disabled={busy}>{busy ? (recipe ? 'Запазване...' : 'Добавяне...') : (recipe ? 'Запази' : 'Добави')}</button>
         <button type="button" onClick={onCancel}>Отказ</button>
       </div>
 
