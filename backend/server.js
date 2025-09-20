@@ -6,7 +6,6 @@ import FormData from 'form-data';
 import cors from 'cors';
 import { PORT, CATBOX_USERHASH, FRONTEND_URL, DATABASE_URL } from './config.js';
 import { Pool } from 'pg';
-import { v4 as uuidv4 } from 'uuid';
 
 const poolAvailable = !!DATABASE_URL;
 const pool = poolAvailable ? new Pool({ connectionString: DATABASE_URL }) : null;
@@ -19,10 +18,10 @@ async function query(text, params) {
 async function ensureRecipesTable() {
   if (!pool) return;
 
-  // Създаваме таблицата, ако не съществува
+  // Таблицата трябва да има serial integer id
   await query(`
     CREATE TABLE IF NOT EXISTS recipes (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      id SERIAL PRIMARY KEY,
       title TEXT,
       image_url TEXT,
       category TEXT,
@@ -32,25 +31,6 @@ async function ensureRecipesTable() {
       updated_at TIMESTAMP DEFAULT now()
     );
   `);
-
-  // Добавяне на липсващи колони, ако ги няма
-  const cols = [
-    { name: 'title', type: 'TEXT' },
-    { name: 'image_url', type: 'TEXT' },
-    { name: 'category', type: 'TEXT' },
-    { name: 'ingredients', type: 'TEXT[]' },
-    { name: 'steps', type: 'TEXT[]' },
-    { name: 'created_at', type: 'TIMESTAMP DEFAULT now()' },
-    { name: 'updated_at', type: 'TIMESTAMP DEFAULT now()' }
-  ];
-
-  for (const col of cols) {
-    await query(`
-      ALTER TABLE recipes
-      ADD COLUMN IF NOT EXISTS ${col.name} ${col.type};
-    `);
-  }
-
   console.log('Recipes table ensured.');
 }
 
@@ -85,12 +65,11 @@ async function getRecipesFromDb(filters = {}) {
 
 async function createRecipeDb(data) {
   const sql = `
-    INSERT INTO recipes (id, title, image_url, category, ingredients, steps)
-    VALUES ($1, $2, $3, $4, $5, $6)
+    INSERT INTO recipes (title, image_url, category, ingredients, steps)
+    VALUES ($1, $2, $3, $4, $5)
     RETURNING id, title, image_url AS "imageUrl", category, ingredients, steps
   `;
   const vals = [
-    uuidv4(),
     data.title,
     data.imageUrl || null,
     data.category || null,
@@ -135,8 +114,8 @@ const upload = multer({ storage });
 
 // fallback in-memory
 let recipesInMemory = [
-  { id: uuidv4(), title: 'Test Recipe 1', image_url: '', imageUrl: '', category: 'Dessert', ingredients: ['sugar', 'flour'], steps: ['Mix', 'Bake'] },
-  { id: uuidv4(), title: 'Test Recipe 2', image_url: '', imageUrl: '', category: 'Main', ingredients: ['chicken', 'salt'], steps: ['Season', 'Cook'] }
+  { id: 1, title: 'Test Recipe 1', image_url: '', imageUrl: '', category: 'Dessert', ingredients: ['sugar', 'flour'], steps: ['Mix', 'Bake'] },
+  { id: 2, title: 'Test Recipe 2', image_url: '', imageUrl: '', category: 'Main', ingredients: ['chicken', 'salt'], steps: ['Season', 'Cook'] }
 ];
 
 // --- Routes ---
@@ -170,7 +149,8 @@ app.post('/recipes', async (req, res) => {
       const row = await createRecipeDb({ title, imageUrl, category, ingredients, steps });
       return res.status(201).json(row);
     } else {
-      const newRecipe = { id: uuidv4(), title, imageUrl, category, ingredients, steps };
+      const newId = recipesInMemory.length ? Math.max(...recipesInMemory.map(r => r.id)) + 1 : 1;
+      const newRecipe = { id: newId, title, imageUrl, category, ingredients, steps };
       recipesInMemory.push(newRecipe);
       return res.status(201).json(newRecipe);
     }
@@ -182,7 +162,7 @@ app.post('/recipes', async (req, res) => {
 
 app.put('/recipes/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id, 10);
     if (poolAvailable) {
       const updated = await updateRecipeDb(id, req.body);
       if (!updated) return res.status(404).json({ error: 'Not found' });
@@ -201,7 +181,7 @@ app.put('/recipes/:id', async (req, res) => {
 
 app.delete('/recipes/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id, 10);
     if (poolAvailable) {
       await deleteRecipeDb(id);
       return res.json({ ok: true, id });

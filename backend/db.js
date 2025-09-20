@@ -7,7 +7,6 @@ const { Pool } = pkg;
 // Зареждаме .env от root
 dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
 
-// Взимаме DATABASE_URL от process.env
 const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
@@ -20,15 +19,12 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
-// Проверка дали pool е наличен
 export const poolAvailable = !!pool;
 
-// Функция за изпълнение на заявки
 export async function query(text, params) {
   return pool.query(text, params);
 }
 
-// Функция за затваряне на Pool
 export async function closePool() {
   await pool.end();
 }
