@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
-import '../styles.css';
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
