@@ -3,8 +3,8 @@ services:
     name: recipes-app-backend
     env: node
     rootDir: backend
-    buildCommand: npm install
-    startCommand: node migrate.js && npm start
+    buildCommand: npm install && npm run migrate
+    startCommand: npm start
     branch: main
     envVars:
       - key: PORT
