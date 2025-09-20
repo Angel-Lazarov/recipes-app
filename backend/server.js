@@ -1,14 +1,14 @@
+// backend/server.js
 import express from 'express';
 import multer from 'multer';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import cors from 'cors';
-import { PORT, CATBOX_USERHASH, FRONTEND_URL } from './config.js';
+import { PORT, CATBOX_USERHASH, FRONTEND_URL, DATABASE_URL } from './config.js';
 import { poolAvailable, query } from './db.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
-
 app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json());
 
@@ -21,7 +21,21 @@ let recipesInMemory = [
   { id: uuidv4(), title: 'Test Recipe 2', image_url: '', imageUrl: '', category: 'Main', ingredients: ['chicken', 'salt'], steps: ['Season', 'Cook'] }
 ];
 
-// --- помощни функции (DB или in-memory) ---
+// --- Ensure title column exists ---
+async function ensureTitleColumn() {
+  if (!poolAvailable) return;
+  try {
+    await query(`
+      ALTER TABLE recipes
+      ADD COLUMN IF NOT EXISTS title TEXT;
+    `);
+    console.log('Recipes table ensured.');
+  } catch (err) {
+    console.error('Failed to ensure title column:', err);
+  }
+}
+
+// --- DB helper functions ---
 async function getRecipesFromDb(filters = {}) {
   const where = [];
   const params = [];
@@ -79,7 +93,6 @@ async function deleteRecipeDb(id) {
 }
 
 // --- Routes ---
-
 app.get('/recipes', async (req, res) => {
   try {
     const { search, category, ingredient } = req.query;
@@ -87,13 +100,10 @@ app.get('/recipes', async (req, res) => {
       const rows = await getRecipesFromDb({ search, category, ingredient });
       return res.json(rows);
     } else {
-      const term = search?.toLowerCase() || '';
-      const cat = category?.toLowerCase() || '';
-      const ing = ingredient?.toLowerCase() || '';
       let result = recipesInMemory.slice();
-      if (term) result = result.filter(r => r.title.toLowerCase().includes(term));
-      if (cat) result = result.filter(r => (r.category || '').toLowerCase() === cat);
-      if (ing) result = result.filter(r => (r.ingredients || []).some(i => i.toLowerCase().includes(ing)));
+      if (search) result = result.filter(r => r.title.toLowerCase().includes(search.toLowerCase()));
+      if (category) result = result.filter(r => (r.category || '').toLowerCase() === category.toLowerCase());
+      if (ingredient) result = result.filter(r => (r.ingredients || []).some(i => i.toLowerCase().includes(ingredient.toLowerCase())));
       result = result.map(r => ({ ...r, imageUrl: r.image_url || r.imageUrl || '' }));
       return res.json(result);
     }
@@ -155,9 +165,9 @@ app.delete('/recipes/:id', async (req, res) => {
   }
 });
 
+// Upload към Catbox
 app.post('/upload', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file' });
-
   try {
     const form = new FormData();
     form.append('reqtype', 'fileupload');
@@ -167,11 +177,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
       contentType: req.file.mimetype
     });
 
-    const response = await fetch('https://catbox.moe/user/api.php', {
-      method: 'POST',
-      body: form
-    });
-
+    const response = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: form });
     if (!response.ok) {
       const text = await response.text();
       console.error('Catbox error:', response.status, text);
@@ -186,6 +192,11 @@ app.post('/upload', upload.single('image'), async (req, res) => {
   }
 });
 
+// health
 app.get('/', (req, res) => res.send('Backend is running!'));
 
-app.listen(PORT, () => console.log(`Backend listening on port ${PORT}  (poolAvailable=${poolAvailable})`));
+// --- Start server ---
+(async () => {
+  if (poolAvailable) await ensureTitleColumn();
+  app.listen(PORT, () => console.log(`Backend listening on port ${PORT}  (poolAvailable=${poolAvailable})`));
+})();
