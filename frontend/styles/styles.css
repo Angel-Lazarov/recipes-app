@@ -1,33 +1,35 @@
-/* frontend/styles.css - финална хармонизирана версия */
+/* frontend/styles.css - финална версия с омекотен визуален стил */
 
 /* --- Основни стилове --- */
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
-    background-color: #f9f9f9;
+    background-color: #f3ede3; /* топъл бежов фон */
     color: #333;
     display: flex;
     flex-direction: column;
     align-items: center;
+    line-height: 1.6; /* по-приятно за четене */
 }
 
 h1 {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    font-weight: 600;
 }
 
 #showFormBtn {
-    background-color: #4a90e2;
+    background-color: #c79f70;
     color: white;
     border: none;
     border-radius: 8px;
     padding: 10px 18px;
     cursor: pointer;
     margin-bottom: 15px;
-    transition: background-color 0.2s, transform 0.1s;
+    transition: background-color 0.3s, transform 0.1s;
 }
 
 #showFormBtn:hover {
-    background-color: #357ab8;
+    background-color: #b08752;
     transform: translateY(-2px);
 }
 
@@ -35,15 +37,15 @@ h1 {
 form {
     width: 100%;
     max-width: 500px;
-    border: 1px solid #ccc;
-    padding: 20px;
+    border: 1px solid #d1c7b2;
+    padding: 25px; /* малко повече пространство */
     margin-bottom: 20px;
     border-radius: 12px;
-    background-color: #fff;
+    background-color: #efe6dc;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 form label {
@@ -54,25 +56,25 @@ form input[type="text"],
 form textarea,
 form input[type="file"] {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border-radius: 6px;
-    border: 1px solid #ccc;
-    background-color: #f5f5f5; /* хармонизиран фон с картите */
-    color: #4a4a4a; /* текст хармонизиран с картите */
+    border: 1px solid #cbbca5;
+    background-color: #f7f2eb;
+    color: #4a4a4a;
     box-sizing: border-box;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 form input[type="text"]::placeholder,
 form textarea::placeholder {
-    color: #a0a0a0; /* дискретен placeholder */
+    color: #a39c91;
 }
 
 form input:focus,
 form textarea:focus {
     outline: none;
-    border-color: #4a90e2;
-    box-shadow: 0 0 4px rgba(74,144,226,0.4);
+    border-color: #c79f70;
+    box-shadow: 0 0 5px rgba(199,159,112,0.4);
 }
 
 /* Preview на изображението във формата */
@@ -83,10 +85,10 @@ form img {
     height: auto;
     object-fit: cover;
     border-radius: 6px;
-    margin-top: 8px;
-    background-color: #ececec; /* същият фон като картите */
+    margin-top: 10px;
+    background-color: #efe6dc;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    transition: transform 0.2s ease;
+    transition: transform 0.25s ease;
 }
 
 form img:hover {
@@ -104,23 +106,23 @@ form button {
 }
 
 form button[type="submit"] {
-    background-color: #4CAF50;
+    background-color: #a18f70;
     color: white;
 }
 
 form button[type="submit"]:hover {
-    background-color: #3e8e41;
+    background-color: #8f7b5a;
     transform: translateY(-2px);
 }
 
 form button[type="button"] {
-    background-color: #f08080;
+    background-color: #d8a28a;
     color: white;
     margin-left: 8px;
 }
 
 form button[type="button"]:hover {
-    background-color: #d97373;
+    background-color: #c68c6e;
     transform: translateY(-2px);
 }
 
@@ -133,7 +135,7 @@ p.error {
 #recipeList {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 25px; /* леко увеличено пространство между картите */
     justify-content: center;
     width: 100%;
     max-width: 1200px;
@@ -141,13 +143,13 @@ p.error {
 
 /* Карта на рецепта */
 .recipe {
-    border: 1px solid #ddd;
+    border: 1px solid #d1c7b2;
     border-radius: 12px;
-    padding: 15px;
+    padding: 18px;
     width: 280px;
     display: flex;
     flex-direction: column;
-    background-color: #ececec; /* неутрален фон */
+    background-color: #efe6dc;
     box-sizing: border-box;
     transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -160,13 +162,13 @@ p.error {
 .recipe h3 {
     font-size: 18px;
     text-align: center;
-    margin-bottom: 8px;
-    color: #3a5f7d; /* хармонизиран тъмносин */
+    margin-bottom: 10px;
+    color: #7a5f45;
 }
 
 .recipe p {
-    color: #4a4a4a; /* хармонизиран тъмносив */
-    margin: 4px 0;
+    color: #4a4a4a;
+    margin: 5px 0;
 }
 
 .recipe img {
@@ -185,7 +187,7 @@ p.error {
     margin-top: auto;
 }
 
-/* Бутоните на картите - хармонизирани тонове */
+/* Бутоните на картите - неутрални цветове */
 .recipe button {
     padding: 8px 12px;
     border-radius: 6px;
@@ -196,21 +198,21 @@ p.error {
 }
 
 .recipe button:first-of-type {
-    background-color: #9e9e9e;
+    background-color: #b0a18c;
     color: #fff;
 }
 
 .recipe button:first-of-type:hover {
-    background-color: #868686;
+    background-color: #998b74;
 }
 
 .recipe button:last-of-type {
-    background-color: #8fbce6;
+    background-color: #c9b59f;
     color: #fff;
 }
 
 .recipe button:last-of-type:hover {
-    background-color: #78a3d1;
+    background-color: #b7a38d;
 }
 
 /* --- Адаптивност --- */
