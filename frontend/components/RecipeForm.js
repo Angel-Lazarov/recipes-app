@@ -11,7 +11,8 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const DEFAULT_IMAGE = '/default-recipe.jpg'; // <- правилен път за Next.js
+  // Път към public директорията
+  const DEFAULT_IMAGE = '/default-recipe.jpg';
 
   useEffect(() => {
     if (recipe) {
