@@ -47,7 +47,6 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
     setError('');
     try {
       let imageUrl = preview;
-
       if (file) {
         const res = await uploadImage(file);
         imageUrl = res.url;
@@ -75,55 +74,62 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
 
   return (
     <form onSubmit={submit}>
-      <label>Име на ястието</label>
-      <input
-        className="filter-input"
-        type="text"
-        value={title}
-        placeholder="Име на ястието"
-        onChange={e => setTitle(e.target.value)}
-        required
-      />
+      <div className="form-item">
+        <label>Име на рецепта</label>
+        <input
+          type="text"
+          value={title}
+          placeholder="Например: Супа от зеленчуци"
+          onChange={e => setTitle(e.target.value)}
+          required
+        />
+      </div>
 
-      <label>Категория</label>
-      <input
-        className="filter-input"
-        type="text"
-        value={category}
-        placeholder="Например: Супа, Десерт..."
-        onChange={e => setCategory(e.target.value)}
-        required
-      />
+      <div className="form-item">
+        <label>Категория</label>
+        <input
+          type="text"
+          value={category}
+          placeholder="Например: Супа, Десерт..."
+          onChange={e => setCategory(e.target.value)}
+          required
+        />
+      </div>
 
-      <label>Съставки</label>
-      <input
-        className="filter-input"
-        type="text"
-        value={ingredients}
-        placeholder="Например: захар, брашно, яйца"
-        onChange={e => setIngredients(e.target.value)}
-        required
-      />
+      <div className="form-item">
+        <label>Съставки</label>
+        <input
+          type="text"
+          value={ingredients}
+          placeholder="захар, брашно, яйца"
+          onChange={e => setIngredients(e.target.value)}
+          required
+        />
+        <small>Разделени със запетая</small>
+      </div>
 
-      <label>Начин на приготвяне</label>
-      <textarea
-        className="filter-input"
-        value={steps}
-        placeholder="Например: Смесете съставките..."
-        onChange={e => setSteps(e.target.value)}
-        required
-      />
+      <div className="form-item">
+        <label>Стъпки</label>
+        <textarea
+          value={steps}
+          placeholder="Смесете съставките..."
+          onChange={e => setSteps(e.target.value)}
+          required
+        />
+      </div>
 
-      <label>Снимка (по избор)</label>
-      <input type="file" accept="image/*" onChange={handleFileChange} />
+      <div className="form-item">
+        <label>Снимка (по избор)</label>
+        <input type="file" accept="image/*" onChange={handleFileChange} />
+      </div>
 
       {preview && <img src={preview} alt="Преглед" />}
 
-      <div style={{ marginTop: '10px' }}>
+      <div className="form-buttons">
         <button type="submit" disabled={busy}>
           {busy ? (recipe ? 'Запазване...' : 'Добавяне...') : (recipe ? 'Запази' : 'Добави')}
         </button>
-        <button type="button" onClick={onCancel} style={{ marginLeft: '8px' }}>Отказ</button>
+        <button type="button" onClick={onCancel}>Отказ</button>
       </div>
 
       {error && <p className="error">{error}</p>}

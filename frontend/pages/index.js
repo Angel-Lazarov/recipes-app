@@ -40,19 +40,20 @@ export default function Home() {
     }
   };
 
-  // Генерираме уникални категории с първа главна буква и сортираме по азбучен ред
+  // Генерираме списък с уникални категории с първа буква голяма
   const categories = Array.from(
     new Set(recipes.map(r => r.category).filter(Boolean))
   )
     .map(cat => cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase())
     .sort();
 
+  // Филтрираме рецептите
   const filteredRecipes = recipes.filter(r => {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
-    const categoryMatch = !filters.category || 
+
+    const categoryMatch = !filters.category ||
       (r.category && (r.category.charAt(0).toUpperCase() + r.category.slice(1).toLowerCase()) === filters.category);
 
-    // Мултифилтър за съставки
     const ingredientFilters = filters.ingredient
       .split(',')
       .map(i => i.trim().toLowerCase())
@@ -91,29 +92,21 @@ export default function Home() {
       )}
 
       {/* Контейнер за филтрите */}
-      <div style={{
-        border: '1px solid #ccc',
-        padding: '15px',
-        borderRadius: '8px',
-        marginBottom: '20px',
-        maxWidth: '600px'
-      }}>
+      <div className="filters-container">
         <h2>Търси по</h2>
 
-        <div style={{ marginBottom: '10px' }}>
+        <div className="filter-item">
           <label>Име</label>
           <input
-            className="filter-input"
             placeholder="Например: Супа от зеленчуци"
             value={filters.search}
             onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
           />
         </div>
 
-        <div style={{ marginBottom: '10px' }}>
+        <div className="filter-item">
           <label>Категория</label>
           <select
-            className="filter-input"
             value={filters.category}
             onChange={e => setFilters(prev => ({ ...prev, category: e.target.value }))}
           >
@@ -124,17 +117,14 @@ export default function Home() {
           </select>
         </div>
 
-        <div style={{ marginBottom: '10px' }}>
+        <div className="filter-item">
           <label>Съставки</label>
           <input
-            className="filter-input"
             placeholder="Например: захар, брашно, яйца"
             value={filters.ingredient}
             onChange={e => setFilters(prev => ({ ...prev, ingredient: e.target.value }))}
           />
-          <small style={{ display: 'block', marginTop: '3px', color: '#555' }}>
-            Въведете съставките, разделени със запетая
-          </small>
+          <small>Съставки, разделени със запетая</small>
         </div>
       </div>
 
