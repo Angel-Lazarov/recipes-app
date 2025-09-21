@@ -4,24 +4,16 @@ import multer from 'multer';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import cors from 'cors';
-import { PORT, CATBOX_USERHASH, FRONTEND_URL, DATABASE_URL } from './config.js';
-import { Pool } from 'pg';
+import { PORT, CATBOX_USERHASH, FRONTEND_URL } from './config.js';
+import { poolAvailable, query } from './db.js';
 
-const poolAvailable = !!DATABASE_URL;
-const pool = poolAvailable ? new Pool({ connectionString: DATABASE_URL }) : null;
-
-async function query(text, params) {
-  if (!pool) throw new Error('No database pool available');
-  return pool.query(text, params);
-}
-
-// --- Reset and create table ---
+// --- Ensure table exists, but do NOT drop it ---
 async function ensureRecipesTable() {
-  if (!pool) return;
+  if (!poolAvailable) return;
   await query(`
     CREATE TABLE IF NOT EXISTS recipes (
       id SERIAL PRIMARY KEY,
-      title TEXT,
+      title TEXT NOT NULL,
       image_url TEXT,
       category TEXT,
       ingredients TEXT[],
@@ -33,19 +25,7 @@ async function ensureRecipesTable() {
   console.log('Recipes table ensured.');
 }
 
-async function resetRecipesTable() {
-  if (!pool) return;
-  try {
-    await query('DROP TABLE IF EXISTS recipes;');
-    console.log('Old recipes table dropped.');
-    await ensureRecipesTable();
-    console.log('New recipes table created.');
-  } catch (err) {
-    console.error('Error resetting recipes table:', err);
-  }
-}
-
-// DB helpers
+// --- DB helpers ---
 async function getRecipesFromDb(filters = {}) {
   const where = [];
   const params = [];
@@ -117,39 +97,24 @@ async function deleteRecipeDb(id) {
 
 // --- Express setup ---
 const app = express();
-
-// --- CORS middleware ---
 app.use(cors({
   origin: FRONTEND_URL,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   credentials: true
 }));
-
 app.use(express.json());
+
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
-
-// fallback in-memory
-let recipesInMemory = [
-  { id: 1, title: 'Test Recipe 1', image_url: '', imageUrl: '', category: 'Dessert', ingredients: ['sugar', 'flour'], steps: ['Mix', 'Bake'] },
-  { id: 2, title: 'Test Recipe 2', image_url: '', imageUrl: '', category: 'Main', ingredients: ['chicken', 'salt'], steps: ['Season', 'Cook'] }
-];
 
 // --- Routes ---
 app.get('/recipes', async (req, res) => {
   try {
     const { search, category, ingredient } = req.query;
-    if (poolAvailable) {
-      const rows = await getRecipesFromDb({ search, category, ingredient });
-      return res.json(rows);
-    } else {
-      let result = recipesInMemory.slice();
-      if (search) result = result.filter(r => r.title.toLowerCase().includes(search.toLowerCase()));
-      if (category) result = result.filter(r => (r.category || '').toLowerCase() === category.toLowerCase());
-      if (ingredient) result = result.filter(r => (r.ingredients || []).some(i => i.toLowerCase().includes(ingredient.toLowerCase())));
-      result = result.map(r => ({ ...r, imageUrl: r.image_url || r.imageUrl || '' }));
-      return res.json(result);
-    }
+    const rows = poolAvailable
+      ? await getRecipesFromDb({ search, category, ingredient })
+      : [];
+    res.json(rows);
   } catch (err) {
     console.error('GET /recipes error', err);
     res.status(500).json({ error: 'Server error' });
@@ -159,15 +124,10 @@ app.get('/recipes', async (req, res) => {
 app.post('/recipes', async (req, res) => {
   try {
     const { title, imageUrl = '', category = '', ingredients = [], steps = [] } = req.body;
-    if (poolAvailable) {
-      const row = await createRecipeDb({ title, imageUrl, category, ingredients, steps });
-      return res.status(201).json(row);
-    } else {
-      const newId = recipesInMemory.length ? Math.max(...recipesInMemory.map(r => r.id)) + 1 : 1;
-      const newRecipe = { id: newId, title, imageUrl, category, ingredients, steps };
-      recipesInMemory.push(newRecipe);
-      return res.status(201).json(newRecipe);
-    }
+    const row = poolAvailable
+      ? await createRecipeDb({ title, imageUrl, category, ingredients, steps })
+      : null;
+    res.status(201).json(row);
   } catch (err) {
     console.error('POST /recipes error', err);
     res.status(500).json({ error: 'Server error' });
@@ -177,16 +137,9 @@ app.post('/recipes', async (req, res) => {
 app.put('/recipes/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
-    if (poolAvailable) {
-      const updated = await updateRecipeDb(id, req.body);
-      if (!updated) return res.status(404).json({ error: 'Not found' });
-      return res.json(updated);
-    } else {
-      const idx = recipesInMemory.findIndex(r => r.id === id);
-      if (idx === -1) return res.status(404).json({ error: 'Not found' });
-      recipesInMemory[idx] = { ...recipesInMemory[idx], ...req.body };
-      return res.json(recipesInMemory[idx]);
-    }
+    const updated = poolAvailable ? await updateRecipeDb(id, req.body) : null;
+    if (!updated) return res.status(404).json({ error: 'Not found' });
+    res.json(updated);
   } catch (err) {
     console.error('PUT /recipes/:id error', err);
     res.status(500).json({ error: 'Server error' });
@@ -196,13 +149,8 @@ app.put('/recipes/:id', async (req, res) => {
 app.delete('/recipes/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
-    if (poolAvailable) {
-      await deleteRecipeDb(id);
-      return res.json({ ok: true, id });
-    } else {
-      recipesInMemory = recipesInMemory.filter(r => r.id !== id);
-      return res.json({ ok: true, id });
-    }
+    if (poolAvailable) await deleteRecipeDb(id);
+    res.json({ ok: true, id });
   } catch (err) {
     console.error('DELETE /recipes/:id error', err);
     res.status(500).json({ error: 'Server error' });
@@ -247,7 +195,7 @@ app.get('/', (req, res) => res.send('Backend is running!'));
 // --- Стартиране на сървъра ---
 (async () => {
   if (poolAvailable) {
-    await resetRecipesTable(); // <--- тук нулираме таблицата
+    await ensureRecipesTable(); // безопасно създава таблицата, без да триe
   }
 
   app.listen(PORT, () =>

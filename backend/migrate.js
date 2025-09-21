@@ -10,15 +10,17 @@ async function runMigrations() {
   try {
     console.log('Running migrations...');
 
-    // Таблица recipes (пример)
+    // Таблица recipes със SERIAL primary key
     await query(`
       CREATE TABLE IF NOT EXISTS recipes (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
         image_url TEXT,
-        ingredients JSONB,
-        steps JSONB,
-        created_at TIMESTAMP DEFAULT NOW()
+        category TEXT,
+        ingredients TEXT[],
+        steps TEXT[],
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
 
