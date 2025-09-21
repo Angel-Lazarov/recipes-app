@@ -75,21 +75,26 @@ export default function Home() {
         ➕ Добави нова рецепта
       </button>
 
+      {/* Центрирана форма за добавяне */}
       {showAdd && !editing && (
-        <RecipeForm
-          show={showAdd}
-          onSaved={onSaved}
-          onCancel={() => setShowAdd(false)}
-        />
+        <div className="form-wrapper">
+          <RecipeForm
+            show={showAdd}
+            onSaved={onSaved}
+            onCancel={() => setShowAdd(false)}
+          />
+        </div>
       )}
 
       {editing && (
-        <RecipeForm
-          show={!!editing}
-          recipe={editing}
-          onSaved={onSaved}
-          onCancel={() => setEditing(null)}
-        />
+        <div className="form-wrapper">
+          <RecipeForm
+            show={!!editing}
+            recipe={editing}
+            onSaved={onSaved}
+            onCancel={() => setEditing(null)}
+          />
+        </div>
       )}
 
       <div className="filters-container">
