@@ -1,4 +1,4 @@
-/* frontend/styles/styles.css - финална версия с филтри и форма в един стил */
+/* frontend/styles/styles.css - финална версия с меки сенки за филтри, форма и рецепти */
 
 body {
     font-family: Arial, sans-serif;
@@ -246,6 +246,15 @@ p.error {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition: box-shadow 0.25s, transform 0.25s;
+}
+
+.filter-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
 }
 
 .filter-item small {
@@ -261,7 +270,7 @@ p.error {
     background-color: #f7f2eb;
     color: #4a4a4a;
     font-size: 16px;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.25s, box-shadow 0.25s;
 }
 
 .filter-item input:focus,
