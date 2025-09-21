@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
+import defaultRecipeImage from '../public/default-recipe.jpg'; // <- нов ред за безопасен URL
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
@@ -64,7 +65,7 @@ export default function Home() {
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
-  const DEFAULT_IMAGE = 'default-recipe.jpg';
+  const DEFAULT_IMAGE = defaultRecipeImage; // <- използваме директния импорт
 
   return (
     <div>
