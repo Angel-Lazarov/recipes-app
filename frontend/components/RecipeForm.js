@@ -1,3 +1,5 @@
+/* frontend/components/RecipeForm.js */
+
 import { useState, useEffect } from 'react';
 import { uploadImage, createRecipe, updateRecipe } from '../utils/api';
 
