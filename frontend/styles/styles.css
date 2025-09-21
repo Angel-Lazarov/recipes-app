@@ -1,4 +1,4 @@
-/* frontend/styles/styles.css - финална версия с филтри и форма в един стил, без small за филтъра */
+/* frontend/styles/styles.css - финална, центрирана версия */
 
 body {
     font-family: Arial, sans-serif;
@@ -12,9 +12,9 @@ body {
 }
 
 h1 {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     font-weight: 600;
-    text-align: center; /* центриране на заглавието */
+    text-align: center;
 }
 
 #showFormBtn {
@@ -26,7 +26,7 @@ h1 {
     cursor: pointer;
     margin-bottom: 15px;
     transition: background-color 0.3s, transform 0.15s;
-    align-self: center; /* центриране на бутона */
+    align-self: center;
 }
 
 #showFormBtn:hover {
@@ -47,7 +47,7 @@ form {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    align-items: center; /* центриране на формата */
+    align-items: center;
 }
 
 form label {
@@ -57,8 +57,8 @@ form label {
 
 form input[type="text"],
 form textarea,
-form input[type="file"],
-form select {
+form select,
+form input[type="file"] {
     width: 100%;
     padding: 12px;
     border-radius: 8px;
@@ -131,6 +131,7 @@ form button[type="button"]:hover {
 p.error {
     color: #d9534f;
     margin-top: 8px;
+    text-align: center;
 }
 
 /* --- СПИСЪК С РЕЦЕПТИ --- */
@@ -228,34 +229,34 @@ p.error {
 /* --- ФИЛТРИ --- */
 .filters-container {
     width: 100%;
-    max-width: 500px;
+    max-width: 1000px;
     background-color: #efe6dc;
     border: 1px solid #d1c7b2;
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 20px;
     display: flex;
-    flex-direction: row;
+    flex-wrap: wrap;
     gap: 15px;
+    justify-content: center;
+    align-items: flex-start;
     box-sizing: border-box;
-    justify-content: center; /* центриране на филтър контейнера */
-    flex-wrap: wrap; /* за да се местят полетата при свиване */
 }
 
 .filters-container h2 {
+    width: 100%;
+    text-align: center;
     margin: 0 0 10px 0;
     font-weight: bold;
     color: #7a5f45;
-    text-align: center;
-    width: 100%;
 }
 
 .filter-item {
+    flex: 1 1 250px;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    flex: 1 1 150px; /* позволява разтягане и свиване */
-    min-width: 140px;
+    min-width: 180px;
 }
 
 .filter-item input,
@@ -292,18 +293,16 @@ p.error {
     form,
     .filters-container {
         width: 90%;
-        align-items: center; /* центриране на малки екрани */
+        align-items: center;
     }
 
-    .filter-item input,
-    .filter-item select {
-        width: 100%;
+    .filter-item {
+        flex: 1 1 100%;
     }
 }
 
 @media (max-width: 480px) {
-    .filters-container {
-        flex-direction: column;
-        gap: 12px;
+    .filter-item {
+        gap: 8px;
     }
 }
