@@ -75,12 +75,12 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
 
   return (
     <form onSubmit={submit}>
-      <label>Име на рецепта</label>
+      <label>Име на ястието</label>
       <input
         className="filter-input"
         type="text"
         value={title}
-        placeholder="Име на рецептата"
+        placeholder="Име на ястието"
         onChange={e => setTitle(e.target.value)}
         required
       />
@@ -95,7 +95,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
         required
       />
 
-      <label>Съставки (разделени със запетаи)</label>
+      <label>Съставки</label>
       <input
         className="filter-input"
         type="text"
@@ -105,7 +105,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
         required
       />
 
-      <label>Стъпки (нов ред за всяка стъпка)</label>
+      <label>Начин на приготвяне</label>
       <textarea
         className="filter-input"
         value={steps}
