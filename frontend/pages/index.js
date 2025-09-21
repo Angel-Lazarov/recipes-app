@@ -64,7 +64,7 @@ export default function Home() {
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
-  const DEFAULT_IMAGE = '/default-recipe.jpg'; // <- използваме правилния URL
+  const DEFAULT_IMAGE = '/default-recipe.jpg'; // <- правилен път за Next.js
 
   return (
     <div>
