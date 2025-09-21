@@ -13,19 +13,21 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
+  const DEFAULT_IMAGE = '/default-recipe.jpg'; // път до дефолтната снимка в public
+
   useEffect(() => {
     if (recipe) {
       setTitle(recipe.title || '');
       setCategory(recipe.category || '');
       setIngredients((recipe.ingredients || []).join(', '));
       setSteps((recipe.steps || []).join('\n'));
-      setPreview(recipe.imageUrl || '');
+      setPreview(recipe.imageUrl || DEFAULT_IMAGE);
     } else {
       setTitle('');
       setCategory('');
       setIngredients('');
       setSteps('');
-      setPreview('');
+      setPreview(DEFAULT_IMAGE);
     }
     setFile(null);
     setError('');
@@ -39,7 +41,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
       reader.onload = () => setPreview(reader.result);
       reader.readAsDataURL(f);
     } else {
-      setPreview(recipe?.imageUrl || '');
+      setPreview(recipe?.imageUrl || DEFAULT_IMAGE);
     }
   };
 
@@ -49,6 +51,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
     setError('');
     try {
       let imageUrl = preview;
+
       if (file) {
         const res = await uploadImage(file);
         imageUrl = res.url;

@@ -137,6 +137,7 @@ p.error {
     justify-content: center;
     width: 100%;
     max-width: 1200px;
+    align-items: stretch; /* изравняване на височината */
 }
 
 .recipe {
@@ -149,6 +150,7 @@ p.error {
     background-color: #efe6dc;
     box-sizing: border-box;
     transition: transform 0.2s, box-shadow 0.2s;
+    align-self: stretch; /* изравняване на височината */
 }
 
 .recipe:hover {
@@ -229,11 +231,12 @@ p.error {
     border: 1px solid #d1c7b2;
     border-radius: 12px;
     padding: 20px;
-    margin: 0 auto 20px auto; /* центриране спрямо дисплея */
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     gap: 15px;
     box-sizing: border-box;
+    align-items: center; /* центриране на съдържанието */
 }
 
 .filters-container h2 {
@@ -246,6 +249,8 @@ p.error {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    width: 100%;
+    max-width: 100%;
 }
 
 .filter-item small {
@@ -255,8 +260,6 @@ p.error {
 
 .filter-item input,
 .filter-item select {
-    width: 100%; /* винаги да заемат цялата ширина на родителя */
-    box-sizing: border-box;
     padding: 10px 12px;
     border-radius: 8px;
     border: 1px solid #cbbca5;
@@ -264,6 +267,7 @@ p.error {
     color: #4a4a4a;
     font-size: 16px;
     transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
 }
 
 .filter-item input:focus,
@@ -287,7 +291,6 @@ p.error {
     form,
     .filters-container {
         width: 90%;
-        margin: 0 auto 20px auto;
     }
 
     .filter-item input,

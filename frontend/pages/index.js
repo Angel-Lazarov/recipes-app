@@ -1,4 +1,3 @@
-/* frontend/pages/index.js */
 import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
@@ -9,6 +8,8 @@ export default function Home() {
   const [editing, setEditing] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [filters, setFilters] = useState({ search: '', category: '', ingredient: '' });
+
+  const DEFAULT_IMAGE = '/default-recipe.jpg'; // дефолтна снимка за всички рецепти без изображение
 
   useEffect(() => {
     fetchRecipes()
@@ -127,25 +128,22 @@ export default function Home() {
       </div>
 
       {loading ? <p>Зареждане...</p> : (
-        filteredRecipes.length === 0 ? (
-          <p>Няма намерени рецепти</p>
-        ) : (
-          <div id="recipeList">
-            {filteredRecipes.map(r => (
-              <div className="recipe" key={r.id}>
-                <h3>{r.title}</h3>
-                <p><strong>Категория:</strong> {r.category}</p>
-                {r.imageUrl && <img src={r.imageUrl} alt={r.title} />}
-                <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
-                <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
-                <div className="buttons">
-                  <button onClick={() => onDelete(r.id)}>Изтрий</button>
-                  <button onClick={() => setEditing(r)}>Редактирай</button>
-                </div>
+        <div id="recipeList">
+          {filteredRecipes.length === 0 && <p>Няма намерени рецепти</p>}
+          {filteredRecipes.map(r => (
+            <div className="recipe" key={r.id}>
+              <h3>{r.title}</h3>
+              <p><strong>Категория:</strong> {r.category}</p>
+              <img src={r.imageUrl || DEFAULT_IMAGE} alt={r.title} />
+              <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
+              <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
+              <div className="buttons">
+                <button onClick={() => onDelete(r.id)}>Изтрий</button>
+                <button onClick={() => setEditing(r)}>Редактирай</button>
               </div>
-            ))}
-          </div>
-        )
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
