@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
 import RecipeModal from '../components/RecipeModal';
+import RecipeCard from '../components/RecipeCard';
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
@@ -26,6 +27,7 @@ export default function Home() {
     if (exists) {
       setRecipes(prev => prev.map(p => p.id === r.id ? r : p));
       setEditing(null);
+      if (selectedRecipe?.id === r.id) setSelectedRecipe(r);
     } else {
       setRecipes(prev => [...prev, r]);
       setShowAdd(false);
@@ -36,6 +38,7 @@ export default function Home() {
     try {
       await deleteRecipe(id);
       setRecipes(prev => prev.filter(p => p.id !== id));
+      if (selectedRecipe?.id === id) setSelectedRecipe(null);
     } catch (err) {
       console.error(err);
       alert('Грешка при изтриване');
@@ -66,6 +69,7 @@ export default function Home() {
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
+  // Placeholder вместо физически файл
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
   return (
@@ -99,6 +103,7 @@ export default function Home() {
 
       <div className="filters-container">
         <h2>Търси по</h2>
+
         <div className="filter-item">
           <label>Име</label>
           <input
@@ -107,6 +112,7 @@ export default function Home() {
             onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
           />
         </div>
+
         <div className="filter-item">
           <label>Категория</label>
           <select
@@ -119,6 +125,7 @@ export default function Home() {
             ))}
           </select>
         </div>
+
         <div className="filter-item">
           <label>Съставки</label>
           <input
@@ -137,17 +144,13 @@ export default function Home() {
             filteredRecipes
               .filter(r => !editing || r.id !== editing.id)
               .map(r => (
-                <div
-                  className="recipe"
+                <RecipeCard
                   key={r.id}
+                  recipe={r}
+                  onEdit={r => setEditing(r)}
+                  onDelete={onDelete}
                   onClick={() => setSelectedRecipe(r)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <h3>{r.title}</h3>
-                  <p><strong>Категория:</strong> {r.category}</p>
-                  {r.imageUrl && <img src={r.imageUrl} alt={r.title} />}
-                  <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
-                </div>
+                />
               ))
           )}
         </div>
@@ -157,6 +160,8 @@ export default function Home() {
         <RecipeModal
           recipe={selectedRecipe}
           onClose={() => setSelectedRecipe(null)}
+          onEdit={() => setEditing(selectedRecipe)}
+          onDelete={() => onDelete(selectedRecipe.id)}
         />
       )}
     </div>
