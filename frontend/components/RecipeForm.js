@@ -81,7 +81,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
         <input
           type="text"
           value={title}
-          placeholder="Например: Супа от зеленчуци"
+          placeholder="Супа от зеленчуци"
           onChange={e => setTitle(e.target.value)}
           required
         />
@@ -92,7 +92,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
         <input
           type="text"
           value={category}
-          placeholder="Например: Супа, Десерт..."
+          placeholder="Супа, Десерт..."
           onChange={e => setCategory(e.target.value)}
           required
         />

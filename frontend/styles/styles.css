@@ -1,4 +1,4 @@
-/* frontend/styles/styles.css - финална версия с меки сенки за филтри, форма и рецепти */
+/* frontend/styles/styles.css - финална версия с филтри и форма в един стил */
 
 body {
     font-family: Arial, sans-serif;
@@ -229,7 +229,7 @@ p.error {
     border: 1px solid #d1c7b2;
     border-radius: 12px;
     padding: 20px;
-    margin-bottom: 20px;
+    margin: 0 auto 20px auto; /* центриране спрямо дисплея */
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -246,15 +246,6 @@ p.error {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    padding: 4px 6px;
-    border-radius: 8px;
-    transition: box-shadow 0.25s, transform 0.25s;
-}
-
-.filter-item:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    transform: translateY(-1px);
 }
 
 .filter-item small {
@@ -264,13 +255,15 @@ p.error {
 
 .filter-item input,
 .filter-item select {
+    width: 100%; /* винаги да заемат цялата ширина на родителя */
+    box-sizing: border-box;
     padding: 10px 12px;
     border-radius: 8px;
     border: 1px solid #cbbca5;
     background-color: #f7f2eb;
     color: #4a4a4a;
     font-size: 16px;
-    transition: border-color 0.25s, box-shadow 0.25s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .filter-item input:focus,
@@ -294,6 +287,7 @@ p.error {
     form,
     .filters-container {
         width: 90%;
+        margin: 0 auto 20px auto;
     }
 
     .filter-item input,
