@@ -51,16 +51,13 @@ export default function Home() {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
     const categoryMatch = !filters.category ||
       (r.category && (r.category.charAt(0).toUpperCase() + r.category.slice(1).toLowerCase()) === filters.category);
-
     const ingredientFilters = filters.ingredient
       .split(',')
       .map(i => i.trim().toLowerCase())
       .filter(Boolean);
-
     const ingredientMatch = ingredientFilters.every(f =>
       r.ingredients?.some(i => i.toLowerCase().includes(f))
     );
-
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
@@ -74,27 +71,21 @@ export default function Home() {
         ➕ Добави нова рецепта
       </button>
 
-      {/* Центрирана форма за добавяне */}
       {showAdd && !editing && (
-        <div className="form-wrapper">
-          <RecipeForm
-            show={showAdd}
-            onSaved={onSaved}
-            onCancel={() => setShowAdd(false)}
-          />
-        </div>
+        <RecipeForm
+          show={showAdd}
+          onSaved={onSaved}
+          onCancel={() => setShowAdd(false)}
+        />
       )}
 
-      {/* Центрирана форма за редакция */}
       {editing && (
-        <div className="form-wrapper">
-          <RecipeForm
-            show={!!editing}
-            recipe={editing}
-            onSaved={onSaved}
-            onCancel={() => setEditing(null)}
-          />
-        </div>
+        <RecipeForm
+          show={!!editing}
+          recipe={editing}
+          onSaved={onSaved}
+          onCancel={() => setEditing(null)}
+        />
       )}
 
       <div className="filters-container">
@@ -138,13 +129,13 @@ export default function Home() {
             <p>Няма намерени рецепти</p>
           ) : (
             filteredRecipes
-              .filter(r => !editing || r.id !== editing.id) // скриваме текущо редактираната рецепта
+              .filter(r => !editing || r.id !== editing.id)
               .map(r => (
                 <RecipeCard
                   key={r.id}
                   recipe={r}
-                  onEdit={setEditing}
                   onDelete={onDelete}
+                  onEdit={setEditing}
                 />
               ))
           )}

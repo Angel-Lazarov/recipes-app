@@ -10,10 +10,8 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   const [preview, setPreview] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const titleRef = useRef(null);
 
-  const formRef = useRef(null);
-
-  // 👉 Placeholder вместо физически файл
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
   useEffect(() => {
@@ -32,16 +30,12 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
     }
     setFile(null);
     setError('');
-  }, [recipe, show]);
 
-  // 👉 Автоматичен фокус върху формата, когато се отваря
-  useEffect(() => {
-    if (show && formRef.current) {
-      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      const firstInput = formRef.current.querySelector('input, textarea, select');
-      if (firstInput) firstInput.focus();
+    // Автоматичен фокус върху заглавието при редакция или добавяне
+    if (show && titleRef.current) {
+      titleRef.current.focus();
     }
-  }, [show]);
+  }, [recipe, show]);
 
   const handleFileChange = (e) => {
     const f = e.target.files[0];
@@ -61,12 +55,10 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
     setError('');
     try {
       let imageUrl = preview;
-
       if (file) {
         const res = await uploadImage(file);
         imageUrl = res.url;
       }
-
       const data = {
         title,
         category,
@@ -74,7 +66,6 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
         steps: steps.split('\n').map(s => s.trim()),
         imageUrl
       };
-
       const saved = recipe ? await updateRecipe(recipe.id, data) : await createRecipe(data);
       onSaved(saved);
     } catch (err) {
@@ -88,10 +79,11 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   if (!show) return null;
 
   return (
-    <form onSubmit={submit} ref={formRef}>
+    <form onSubmit={submit}>
       <div className="form-item">
         <label>Име на рецепта</label>
         <input
+          ref={titleRef}
           type="text"
           value={title}
           placeholder="Супа от зеленчуци"
