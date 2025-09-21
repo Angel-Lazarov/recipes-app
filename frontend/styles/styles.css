@@ -1,4 +1,4 @@
-/* frontend/styles/styles.css - финална, центрирана версия с мобилни корекции */
+/* frontend/styles/styles.css - финална версия с безопасно центриране на филтрите */
 
 body {
     font-family: Arial, sans-serif;
@@ -295,8 +295,9 @@ p.error {
         align-items: center;
     }
 
+    /* безопасно центриране на филтрите */
     .filters-container {
-        flex-direction: column; /* центриране на филтрите */
+        margin: 0 auto;
     }
 
     .filter-item {
