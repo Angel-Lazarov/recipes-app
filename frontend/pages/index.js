@@ -49,15 +49,19 @@ export default function Home() {
 
   const filteredRecipes = recipes.filter(r => {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
+
     const categoryMatch = !filters.category ||
       (r.category && (r.category.charAt(0).toUpperCase() + r.category.slice(1).toLowerCase()) === filters.category);
+
     const ingredientFilters = filters.ingredient
       .split(',')
       .map(i => i.trim().toLowerCase())
       .filter(Boolean);
+
     const ingredientMatch = ingredientFilters.every(f =>
       r.ingredients?.some(i => i.toLowerCase().includes(f))
     );
+
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
@@ -71,21 +75,18 @@ export default function Home() {
         ➕ Добави нова рецепта
       </button>
 
-      {showAdd && !editing && (
-        <RecipeForm
-          show={showAdd}
-          onSaved={onSaved}
-          onCancel={() => setShowAdd(false)}
-        />
-      )}
-
-      {editing && (
-        <RecipeForm
-          show={!!editing}
-          recipe={editing}
-          onSaved={onSaved}
-          onCancel={() => setEditing(null)}
-        />
+      {(showAdd || editing) && (
+        <div className="form-wrapper">
+          <RecipeForm
+            show={showAdd || !!editing}
+            recipe={editing}
+            onSaved={onSaved}
+            onCancel={() => {
+              setShowAdd(false);
+              setEditing(null);
+            }}
+          />
+        </div>
       )}
 
       <div className="filters-container">
@@ -129,13 +130,13 @@ export default function Home() {
             <p>Няма намерени рецепти</p>
           ) : (
             filteredRecipes
-              .filter(r => !editing || r.id !== editing.id)
+              .filter(r => !editing || r.id !== editing.id) // скриваме редактираната
               .map(r => (
                 <RecipeCard
                   key={r.id}
                   recipe={r}
-                  onDelete={onDelete}
                   onEdit={setEditing}
+                  onDelete={onDelete}
                 />
               ))
           )}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { uploadImage, createRecipe, updateRecipe } from '../utils/api';
 
 export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
@@ -10,7 +10,6 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   const [preview, setPreview] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const titleRef = useRef(null);
 
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
@@ -30,11 +29,6 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
     }
     setFile(null);
     setError('');
-
-    // Автоматичен фокус върху заглавието при редакция или добавяне
-    if (show && titleRef.current) {
-      titleRef.current.focus();
-    }
   }, [recipe, show]);
 
   const handleFileChange = (e) => {
@@ -82,47 +76,23 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
     <form onSubmit={submit}>
       <div className="form-item">
         <label>Име на рецепта</label>
-        <input
-          ref={titleRef}
-          type="text"
-          value={title}
-          placeholder="Супа от зеленчуци"
-          onChange={e => setTitle(e.target.value)}
-          required
-        />
+        <input type="text" value={title} placeholder="Супа от зеленчуци" onChange={e => setTitle(e.target.value)} required />
       </div>
 
       <div className="form-item">
         <label>Категория</label>
-        <input
-          type="text"
-          value={category}
-          placeholder="Супа, Десерт..."
-          onChange={e => setCategory(e.target.value)}
-          required
-        />
+        <input type="text" value={category} placeholder="Супа, Десерт..." onChange={e => setCategory(e.target.value)} required />
       </div>
 
       <div className="form-item">
         <label>Съставки</label>
-        <input
-          type="text"
-          value={ingredients}
-          placeholder="захар, брашно, яйца"
-          onChange={e => setIngredients(e.target.value)}
-          required
-        />
+        <input type="text" value={ingredients} placeholder="захар, брашно, яйца" onChange={e => setIngredients(e.target.value)} required />
         <small>Разделени със запетая</small>
       </div>
 
       <div className="form-item">
         <label>Стъпки</label>
-        <textarea
-          value={steps}
-          placeholder="Смесете съставките..."
-          onChange={e => setSteps(e.target.value)}
-          required
-        />
+        <textarea value={steps} placeholder="Смесете съставките..." onChange={e => setSteps(e.target.value)} required />
       </div>
 
       <div className="form-item">
@@ -133,9 +103,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
       {preview && <img src={preview} alt="Преглед" />}
 
       <div className="form-buttons">
-        <button type="submit" disabled={busy}>
-          {busy ? (recipe ? 'Запазване...' : 'Добавяне...') : (recipe ? 'Запази' : 'Добави')}
-        </button>
+        <button type="submit" disabled={busy}>{busy ? (recipe ? 'Запазване...' : 'Добавяне...') : (recipe ? 'Запази' : 'Добави')}</button>
         <button type="button" onClick={onCancel}>Отказ</button>
       </div>
 
