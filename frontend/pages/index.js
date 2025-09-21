@@ -1,7 +1,8 @@
+/* frontend/pages/index.js */
 import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
-import defaultImage from '../public/default-recipe.jpg'; // Импорт на дефолтната снимка
+import defaultImage from '../assets/default-recipe.jpg'; // импорт на картинката
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
@@ -41,12 +42,14 @@ export default function Home() {
     }
   };
 
+  // Генерираме списък с уникални категории с първа буква голяма
   const categories = Array.from(
     new Set(recipes.map(r => r.category).filter(Boolean))
   )
     .map(cat => cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase())
     .sort();
 
+  // Филтрираме рецептите
   const filteredRecipes = recipes.filter(r => {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
 
@@ -64,8 +67,6 @@ export default function Home() {
 
     return nameMatch && categoryMatch && ingredientMatch;
   });
-
-  const DEFAULT_IMAGE = defaultImage;
 
   return (
     <div>
@@ -92,6 +93,7 @@ export default function Home() {
         />
       )}
 
+      {/* Контейнер за филтрите */}
       <div className="filters-container">
         <h2>Търси по</h2>
 
@@ -137,7 +139,7 @@ export default function Home() {
               <div className="recipe" key={r.id}>
                 <h3>{r.title}</h3>
                 <p><strong>Категория:</strong> {r.category}</p>
-                <img src={r.imageUrl || DEFAULT_IMAGE} alt={r.title} />
+                <img src={r.imageUrl || defaultImage} alt={r.title} />
                 <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
                 <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
                 <div className="buttons">
