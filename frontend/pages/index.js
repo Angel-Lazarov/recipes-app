@@ -124,7 +124,6 @@ export default function Home() {
             value={filters.ingredient}
             onChange={e => setFilters(prev => ({ ...prev, ingredient: e.target.value }))}
           />
-          <small>Съставки, разделени със запетая</small>
         </div>
       </div>
 
