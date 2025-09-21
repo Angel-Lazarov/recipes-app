@@ -99,7 +99,7 @@ export default function Home() {
         <div className="filter-item">
           <label>Име</label>
           <input
-            placeholder="Например: Супа от зеленчуци"
+            placeholder="Супа от зеленчуци"
             value={filters.search}
             onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
           />
@@ -121,7 +121,7 @@ export default function Home() {
         <div className="filter-item">
           <label>Съставки</label>
           <input
-            placeholder="Например: захар, брашно, яйца"
+            placeholder="захар, брашно, яйца"
             value={filters.ingredient}
             onChange={e => setFilters(prev => ({ ...prev, ingredient: e.target.value }))}
           />
