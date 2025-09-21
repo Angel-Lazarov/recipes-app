@@ -1,5 +1,3 @@
-/* frontend/styles/styles.css - финална версия с филтри и форма в един стил */
-
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
@@ -14,6 +12,7 @@ body {
 h1 {
     margin-bottom: 25px;
     font-weight: 600;
+    text-align: center; /* центрираме заглавието */
 }
 
 #showFormBtn {
@@ -25,6 +24,7 @@ h1 {
     cursor: pointer;
     margin-bottom: 15px;
     transition: background-color 0.3s, transform 0.15s;
+    align-self: center; /* центрираме бутона */
 }
 
 #showFormBtn:hover {
@@ -229,26 +229,31 @@ p.error {
     border: 1px solid #d1c7b2;
     border-radius: 12px;
     padding: 20px;
-    margin-bottom: 20px;
+    margin: 0 auto 20px auto; /* центрираме контейнера */
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* по подразбиране филтрите на един ред */
     gap: 15px;
     box-sizing: border-box;
-    align-items: center; /* центрира съдържанието */
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap; /* позволява преминаване на следващ ред при липса на място */
 }
 
 .filters-container h2 {
+    width: 100%;
     margin: 0 0 10px 0;
     font-weight: bold;
     color: #7a5f45;
+    text-align: center;
 }
 
 .filter-item {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    width: 100%;
-    max-width: 400px; /* всички полета с еднаква широчина */
+    flex: 1 1 150px; /* позволява на филтърите да се разпределят равномерно */
+    min-width: 150px;
+    max-width: 200px;
 }
 
 .filter-item small {
@@ -290,7 +295,8 @@ p.error {
     form,
     .filters-container {
         width: 90%;
-        align-items: center; /* центриране на малки екрани */
+        flex-direction: column; /* филтрите едно под друго */
+        align-items: center;
     }
 
     .filter-item input,
