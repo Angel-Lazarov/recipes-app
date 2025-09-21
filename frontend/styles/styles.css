@@ -1,4 +1,4 @@
-/* frontend/styles/styles.css - финална, коригирана версия */
+/* frontend/styles/styles.css - финална, центрирана версия */
 
 /* --- ОСНОВНИ --- */
 body {
@@ -59,7 +59,7 @@ form input[type="text"],
 form textarea,
 form select,
 form input[type="file"] {
-    width: 100%; /* всички полета еднакви */
+    width: 100%;
     padding: 12px;
     border-radius: 8px;
     border: 1px solid #cbbca5;
@@ -68,11 +68,6 @@ form input[type="file"] {
     box-sizing: border-box;
     transition: border-color 0.2s, box-shadow 0.2s;
     display: block;
-}
-
-form textarea {
-    min-height: 100px;
-    resize: vertical;
 }
 
 form input[type="text"]::placeholder,
@@ -233,6 +228,15 @@ p.error {
     transform: translateY(-1px);
 }
 
+/* --- Стъпки вътре в картата --- */
+.recipe-steps {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 120px;
+    overflow-y: auto;
+    margin: 5px 0;
+}
+
 /* --- ФИЛТРИ --- */
 .filters-container {
     width: 100%;
@@ -241,7 +245,7 @@ p.error {
     border: 1px solid #d1c7b2;
     border-radius: 12px;
     padding: 20px;
-    margin: 0 auto 40px auto; /* + разстояние от картите */
+    margin: 0 auto 30px auto;
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
@@ -300,10 +304,6 @@ p.error {
     form,
     .filters-container {
         width: 90%;
-    }
-
-    .filters-container {
-        margin-bottom: 30px; /* да не е долепено до картите */
     }
 
     .filter-item {

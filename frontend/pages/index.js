@@ -1,6 +1,7 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
+import RecipeCard from '../components/RecipeCard';
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
@@ -8,8 +9,6 @@ export default function Home() {
   const [editing, setEditing] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [filters, setFilters] = useState({ search: '', category: '', ingredient: '' });
-
-  const formRef = useRef(null);
 
   useEffect(() => {
     fetchRecipes()
@@ -20,15 +19,6 @@ export default function Home() {
       })
       .finally(() => setLoading(false));
   }, []);
-
-  useEffect(() => {
-    // Ако има форма за добавяне или редакция, скролваме и фокусираме
-    if (formRef.current) {
-      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      const input = formRef.current.querySelector('input, textarea');
-      if (input) input.focus();
-    }
-  }, [showAdd, editing]);
 
   const onSaved = (r) => {
     const exists = recipes.find(p => p.id === r.id);
@@ -59,7 +49,6 @@ export default function Home() {
 
   const filteredRecipes = recipes.filter(r => {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
-
     const categoryMatch = !filters.category ||
       (r.category && (r.category.charAt(0).toUpperCase() + r.category.slice(1).toLowerCase()) === filters.category);
 
@@ -75,7 +64,6 @@ export default function Home() {
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
-  // Placeholder вместо физически файл
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
   return (
@@ -87,8 +75,8 @@ export default function Home() {
       </button>
 
       {/* Центрирана форма за добавяне */}
-      {(showAdd && !editing) && (
-        <div className="form-wrapper" ref={formRef}>
+      {showAdd && !editing && (
+        <div className="form-wrapper">
           <RecipeForm
             show={showAdd}
             onSaved={onSaved}
@@ -97,8 +85,9 @@ export default function Home() {
         </div>
       )}
 
+      {/* Центрирана форма за редакция */}
       {editing && (
-        <div className="form-wrapper" ref={formRef}>
+        <div className="form-wrapper">
           <RecipeForm
             show={!!editing}
             recipe={editing}
@@ -149,19 +138,14 @@ export default function Home() {
             <p>Няма намерени рецепти</p>
           ) : (
             filteredRecipes
-              .filter(r => !editing || r.id !== editing.id) // Скриваме редактираната рецепта
+              .filter(r => !editing || r.id !== editing.id) // скриваме текущо редактираната рецепта
               .map(r => (
-                <div className="recipe" key={r.id}>
-                  <h3>{r.title}</h3>
-                  <p><strong>Категория:</strong> {r.category}</p>
-                  <img src={r.imageUrl || DEFAULT_IMAGE} alt={r.title} />
-                  <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
-                  <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
-                  <div className="buttons">
-                    <button onClick={() => onDelete(r.id)}>Изтрий</button>
-                    <button onClick={() => setEditing(r)}>Редактирай</button>
-                  </div>
-                </div>
+                <RecipeCard
+                  key={r.id}
+                  recipe={r}
+                  onEdit={setEditing}
+                  onDelete={onDelete}
+                />
               ))
           )}
         </div>

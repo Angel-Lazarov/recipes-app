@@ -1,4 +1,3 @@
-// frontend/components/RecipeCard.js
 export default function RecipeCard({ recipe, onEdit, onDelete }) {
   return (
     <div className="recipe">
@@ -10,10 +9,10 @@ export default function RecipeCard({ recipe, onEdit, onDelete }) {
       )}
 
       <p><strong>Съставки:</strong> {recipe.ingredients?.join(', ')}</p>
-      <p><strong>Стъпки:</strong></p>
-      <p style={{ whiteSpace: 'pre-wrap' }}>{recipe.steps?.join('\n')}</p>
 
-      <div style={{ marginTop: 'auto', display: 'flex', gap: '8px' }}>
+      <p className="recipe-steps">{recipe.steps?.join('\n')}</p>
+
+      <div className="buttons">
         <button onClick={() => onDelete(recipe.id)}>🗑️ Изтрий</button>
         <button onClick={() => onEdit(recipe)}>✏️ Редактирай</button>
       </div>
