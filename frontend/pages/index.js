@@ -64,7 +64,7 @@ export default function Home() {
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
-  const DEFAULT_IMAGE = '/default-recipe.jpg'; // стария път, както беше
+  const DEFAULT_IMAGE = '/default-recipe.jpg';
 
   return (
     <div>
