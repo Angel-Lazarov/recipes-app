@@ -64,7 +64,7 @@ export default function Home() {
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
-const DEFAULT_IMAGE = process.env.PUBLIC_URL + '/default-recipe.jpg';
+  const DEFAULT_IMAGE = 'default-recipe.jpg';
 
   return (
     <div>
@@ -75,19 +75,19 @@ const DEFAULT_IMAGE = process.env.PUBLIC_URL + '/default-recipe.jpg';
       </button>
 
       {showAdd && !editing && (
-        <RecipeForm 
-          show={showAdd} 
-          onSaved={onSaved} 
-          onCancel={() => setShowAdd(false)} 
+        <RecipeForm
+          show={showAdd}
+          onSaved={onSaved}
+          onCancel={() => setShowAdd(false)}
         />
       )}
 
       {editing && (
-        <RecipeForm 
-          show={!!editing} 
-          recipe={editing} 
-          onSaved={onSaved} 
-          onCancel={() => setEditing(null)} 
+        <RecipeForm
+          show={!!editing}
+          recipe={editing}
+          onSaved={onSaved}
+          onCancel={() => setEditing(null)}
         />
       )}
 

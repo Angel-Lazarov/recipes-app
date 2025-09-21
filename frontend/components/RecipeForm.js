@@ -11,7 +11,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const DEFAULT_IMAGE = process.env.PUBLIC_URL + '/default-recipe.jpg';
+  const DEFAULT_IMAGE = 'default-recipe.jpg';
 
   useEffect(() => {
     if (recipe) {
