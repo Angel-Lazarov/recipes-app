@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { uploadImage, createRecipe, updateRecipe } from '../utils/api';
-import defaultImage from '../assets/default-recipe.jpg'; // нов импорт
 
 export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   const [title, setTitle] = useState('');
@@ -12,7 +11,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const DEFAULT_IMAGE = defaultImage; // използваме импорта
+  const DEFAULT_IMAGE = '/default-recipe.jpg';
 
   useEffect(() => {
     if (recipe) {
