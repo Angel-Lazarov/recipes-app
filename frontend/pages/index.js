@@ -64,8 +64,8 @@ export default function Home() {
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
-  // Път към public директорията
-  const DEFAULT_IMAGE = '/default-recipe.jpg';
+  // 👉 Placeholder вместо физически файл
+  const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
   return (
     <div>
