@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
 
@@ -9,6 +9,8 @@ export default function Home() {
   const [showAdd, setShowAdd] = useState(false);
   const [filters, setFilters] = useState({ search: '', category: '', ingredient: '' });
 
+  const formRef = useRef(null);
+
   useEffect(() => {
     fetchRecipes()
       .then(data => setRecipes(data))
@@ -18,6 +20,15 @@ export default function Home() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    // Ако има форма за добавяне или редакция, скролваме и фокусираме
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const input = formRef.current.querySelector('input, textarea');
+      if (input) input.focus();
+    }
+  }, [showAdd, editing]);
 
   const onSaved = (r) => {
     const exists = recipes.find(p => p.id === r.id);
@@ -64,7 +75,7 @@ export default function Home() {
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
-  // 👉 Placeholder вместо физически файл
+  // Placeholder вместо физически файл
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
   return (
@@ -76,8 +87,8 @@ export default function Home() {
       </button>
 
       {/* Центрирана форма за добавяне */}
-      {showAdd && !editing && (
-        <div className="form-wrapper">
+      {(showAdd && !editing) && (
+        <div className="form-wrapper" ref={formRef}>
           <RecipeForm
             show={showAdd}
             onSaved={onSaved}
@@ -87,7 +98,7 @@ export default function Home() {
       )}
 
       {editing && (
-        <div className="form-wrapper">
+        <div className="form-wrapper" ref={formRef}>
           <RecipeForm
             show={!!editing}
             recipe={editing}
@@ -137,19 +148,21 @@ export default function Home() {
           {filteredRecipes.length === 0 ? (
             <p>Няма намерени рецепти</p>
           ) : (
-            filteredRecipes.map(r => (
-              <div className="recipe" key={r.id}>
-                <h3>{r.title}</h3>
-                <p><strong>Категория:</strong> {r.category}</p>
-                <img src={r.imageUrl || DEFAULT_IMAGE} alt={r.title} />
-                <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
-                <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
-                <div className="buttons">
-                  <button onClick={() => onDelete(r.id)}>Изтрий</button>
-                  <button onClick={() => setEditing(r)}>Редактирай</button>
+            filteredRecipes
+              .filter(r => !editing || r.id !== editing.id) // Скриваме редактираната рецепта
+              .map(r => (
+                <div className="recipe" key={r.id}>
+                  <h3>{r.title}</h3>
+                  <p><strong>Категория:</strong> {r.category}</p>
+                  <img src={r.imageUrl || DEFAULT_IMAGE} alt={r.title} />
+                  <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
+                  <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
+                  <div className="buttons">
+                    <button onClick={() => onDelete(r.id)}>Изтрий</button>
+                    <button onClick={() => setEditing(r)}>Редактирай</button>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))
           )}
         </div>
       )}

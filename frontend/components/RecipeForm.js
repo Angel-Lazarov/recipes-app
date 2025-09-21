@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { uploadImage, createRecipe, updateRecipe } from '../utils/api';
 
 export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
@@ -10,6 +10,8 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   const [preview, setPreview] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+
+  const formRef = useRef(null);
 
   // 👉 Placeholder вместо физически файл
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
@@ -31,6 +33,15 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
     setFile(null);
     setError('');
   }, [recipe, show]);
+
+  // 👉 Автоматичен фокус върху формата, когато се отваря
+  useEffect(() => {
+    if (show && formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const firstInput = formRef.current.querySelector('input, textarea, select');
+      if (firstInput) firstInput.focus();
+    }
+  }, [show]);
 
   const handleFileChange = (e) => {
     const f = e.target.files[0];
@@ -77,7 +88,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   if (!show) return null;
 
   return (
-    <form onSubmit={submit}>
+    <form onSubmit={submit} ref={formRef}>
       <div className="form-item">
         <label>Име на рецепта</label>
         <input
