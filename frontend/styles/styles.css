@@ -42,7 +42,7 @@ form {
     max-width: 500px;
     border: 1px solid #d1c7b2;
     padding: 25px;
-    margin: 0 auto 30px auto; /* центриране */
+    margin: 0 auto 30px auto;
     border-radius: 12px;
     background-color: #efe6dc;
     box-sizing: border-box;
@@ -67,7 +67,6 @@ form input[type="file"] {
     color: #4a4a4a;
     box-sizing: border-box;
     transition: border-color 0.2s, box-shadow 0.2s;
-    display: block;
 }
 
 form input[type="text"]::placeholder,
@@ -156,8 +155,7 @@ p.error {
     background-color: #efe6dc;
     box-sizing: border-box;
     transition: transform 0.2s, box-shadow 0.2s;
-    height: 380px;
-    overflow: hidden;
+    cursor: pointer;
 }
 
 .recipe:hover {
@@ -175,59 +173,20 @@ p.error {
 .recipe p {
     color: #4a4a4a;
     margin: 5px 0;
-}
-
-.recipe p strong {
-    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .recipe img {
     width: 100%;
-    height: 140px;
+    height: 150px;
     object-fit: cover;
     margin-top: 8px;
     border-radius: 12px;
     transition: transform 0.3s ease;
-}
-
-.recipe img:hover {
-    transform: scale(1.03);
-}
-
-.recipe .buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: auto;
-}
-
-.recipe button {
-    padding: 8px 14px;
-    border-radius: 12px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-}
-
-.recipe button:first-of-type {
-    background-color: #b0a18c;
-    color: #fff;
-}
-
-.recipe button:first-of-type:hover {
-    background-color: #998b74;
-    transform: translateY(-1px);
-}
-
-.recipe button:last-of-type {
-    background-color: #c9b59f;
-    color: #fff;
-}
-
-.recipe button:last-of-type:hover {
-    background-color: #b7a38d;
-    transform: translateY(-1px);
 }
 
 /* --- ФИЛТРИ --- */
@@ -238,7 +197,7 @@ p.error {
     border: 1px solid #d1c7b2;
     border-radius: 12px;
     padding: 20px;
-    margin: 0 auto 30px auto; /* разстояние от картите + центриране */
+    margin: 0 auto 30px auto;
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
@@ -283,95 +242,84 @@ p.error {
     box-shadow: 0 0 6px rgba(199,159,112,0.4);
 }
 
-/* --- MODAL --- */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  overflow-y: auto;
-  padding: 20px;
-  box-sizing: border-box;
+/* --- МОДАЛ --- */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 20px;
 }
 
 .modal-content {
-  background-color: #efe6dc;
-  border-radius: 12px;
-  padding: 25px;
-  max-width: 600px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-  box-sizing: border-box;
+    background-color: #efe6dc;
+    border-radius: 12px;
+    padding: 25px;
+    max-width: 600px;
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .modal-close {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: #d8a28a;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 10px;
-  cursor: pointer;
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-}
-
-.modal-close:hover {
-  background: #c68c6e;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.modal-buttons button {
-  padding: 10px 18px;
-  border-radius: 12px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-}
-
-.modal-buttons button:first-of-type {
-  background-color: #c9b59f;
-  color: white;
-}
-
-.modal-buttons button:first-of-type:hover {
-  background-color: #b7a38d;
-  transform: translateY(-1px);
-}
-
-.modal-buttons button:last-of-type {
-  background-color: #b0a18c;
-  color: white;
-}
-
-.modal-buttons button:last-of-type:hover {
-  background-color: #998b74;
-  transform: translateY(-1px);
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
 }
 
 .modal-content img {
-  width: 100%;
-  max-height: 300px;
-  object-fit: cover;
-  border-radius: 12px;
-  margin-bottom: 15px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.modal-buttons button {
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.modal-buttons button:first-of-type {
+    background-color: #b0a18c;
+    color: #fff;
+}
+
+.modal-buttons button:first-of-type:hover {
+    background-color: #998b74;
+}
+
+.modal-buttons button:last-of-type {
+    background-color: #c9b59f;
+    color: #fff;
+}
+
+.modal-buttons button:last-of-type:hover {
+    background-color: #b7a38d;
 }
 
 /* --- Адаптивност --- */
@@ -383,7 +331,6 @@ p.error {
 
     .recipe {
         width: 90%;
-        height: auto;
     }
 
     form,
@@ -399,5 +346,10 @@ p.error {
 @media (max-width: 480px) {
     .filter-item {
         gap: 8px;
+    }
+
+    .modal-content {
+        max-width: 100%;
+        padding: 15px;
     }
 }

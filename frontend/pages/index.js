@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
 import RecipeModal from '../components/RecipeModal';
-import RecipeCard from '../components/RecipeCard';
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
@@ -27,7 +26,6 @@ export default function Home() {
     if (exists) {
       setRecipes(prev => prev.map(p => p.id === r.id ? r : p));
       setEditing(null);
-      if (selectedRecipe?.id === r.id) setSelectedRecipe(r);
     } else {
       setRecipes(prev => [...prev, r]);
       setShowAdd(false);
@@ -53,23 +51,18 @@ export default function Home() {
 
   const filteredRecipes = recipes.filter(r => {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
-
     const categoryMatch = !filters.category ||
       (r.category && (r.category.charAt(0).toUpperCase() + r.category.slice(1).toLowerCase()) === filters.category);
-
     const ingredientFilters = filters.ingredient
       .split(',')
       .map(i => i.trim().toLowerCase())
       .filter(Boolean);
-
     const ingredientMatch = ingredientFilters.every(f =>
       r.ingredients?.some(i => i.toLowerCase().includes(f))
     );
-
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
-  // Placeholder вместо физически файл
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
   return (
@@ -141,17 +134,19 @@ export default function Home() {
           {filteredRecipes.length === 0 ? (
             <p>Няма намерени рецепти</p>
           ) : (
-            filteredRecipes
-              .filter(r => !editing || r.id !== editing.id)
-              .map(r => (
-                <RecipeCard
-                  key={r.id}
-                  recipe={r}
-                  onEdit={r => setEditing(r)}
-                  onDelete={onDelete}
-                  onClick={() => setSelectedRecipe(r)}
-                />
-              ))
+            filteredRecipes.map(r => (
+              <div
+                className="recipe"
+                key={r.id}
+                onClick={() => setSelectedRecipe(r)}
+              >
+                <h3>{r.title}</h3>
+                <p><strong>Категория:</strong> {r.category}</p>
+                <img src={r.imageUrl || DEFAULT_IMAGE} alt={r.title} />
+                <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
+                <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
+              </div>
+            ))
           )}
         </div>
       )}
@@ -160,7 +155,10 @@ export default function Home() {
         <RecipeModal
           recipe={selectedRecipe}
           onClose={() => setSelectedRecipe(null)}
-          onEdit={() => setEditing(selectedRecipe)}
+          onEdit={() => {
+            setEditing(selectedRecipe);
+            setSelectedRecipe(null);
+          }}
           onDelete={() => onDelete(selectedRecipe.id)}
         />
       )}
