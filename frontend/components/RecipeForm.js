@@ -13,7 +13,7 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const DEFAULT_IMAGE = '/default-recipe.jpg'; // дефолтна снимка от public
+  const DEFAULT_IMAGE = '/images/default-recipe.jpg'; // нов път
 
   useEffect(() => {
     if (recipe) {
