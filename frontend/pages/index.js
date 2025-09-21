@@ -1,7 +1,7 @@
-/* frontend/pages/index.js */
 import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
+import defaultImage from '../public/default-recipe.jpg'; // Импорт на дефолтната снимка
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
@@ -41,14 +41,12 @@ export default function Home() {
     }
   };
 
-  // Генерираме списък с уникални категории с първа буква голяма
   const categories = Array.from(
     new Set(recipes.map(r => r.category).filter(Boolean))
   )
     .map(cat => cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase())
     .sort();
 
-  // Филтрираме рецептите
   const filteredRecipes = recipes.filter(r => {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
 
@@ -67,7 +65,7 @@ export default function Home() {
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
-  const DEFAULT_IMAGE = '/images/default-recipe.jpg'; // нов път
+  const DEFAULT_IMAGE = defaultImage;
 
   return (
     <div>
@@ -94,7 +92,6 @@ export default function Home() {
         />
       )}
 
-      {/* Контейнер за филтрите */}
       <div className="filters-container">
         <h2>Търси по</h2>
 
