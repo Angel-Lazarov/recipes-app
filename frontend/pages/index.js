@@ -40,10 +40,28 @@ export default function Home() {
     }
   };
 
+  // Генерираме уникални категории с първа главна буква и сортираме по азбучен ред
+  const categories = Array.from(
+    new Set(recipes.map(r => r.category).filter(Boolean))
+  )
+    .map(cat => cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase())
+    .sort();
+
   const filteredRecipes = recipes.filter(r => {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
-    const categoryMatch = r.category?.toLowerCase().includes(filters.category.toLowerCase());
-    const ingredientMatch = filters.ingredient === '' || r.ingredients?.some(i => i.toLowerCase().includes(filters.ingredient.toLowerCase()));
+    const categoryMatch = !filters.category || 
+      (r.category && (r.category.charAt(0).toUpperCase() + r.category.slice(1).toLowerCase()) === filters.category);
+
+    // Мултифилтър за съставки
+    const ingredientFilters = filters.ingredient
+      .split(',')
+      .map(i => i.trim().toLowerCase())
+      .filter(Boolean);
+
+    const ingredientMatch = ingredientFilters.every(f =>
+      r.ingredients?.some(i => i.toLowerCase().includes(f))
+    );
+
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
@@ -79,15 +97,21 @@ export default function Home() {
           value={filters.search}
           onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
         />
-        <input
+
+        <select
           className="filter-input"
-          placeholder="Филтър по категория"
           value={filters.category}
           onChange={e => setFilters(prev => ({ ...prev, category: e.target.value }))}
-        />
+        >
+          <option value="">Всички категории</option>
+          {categories.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+
         <input
           className="filter-input"
-          placeholder="Филтър по съставка"
+          placeholder="Филтър по съставки (разделени със запетаи)"
           value={filters.ingredient}
           onChange={e => setFilters(prev => ({ ...prev, ingredient: e.target.value }))}
         />
