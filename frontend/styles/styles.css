@@ -1,4 +1,4 @@
-/* frontend/styles/styles.css - финална, центрирана версия */
+/* frontend/styles/styles.css - коригиран за центриране и подредба */
 
 body {
     font-family: Arial, sans-serif;
@@ -27,6 +27,9 @@ h1 {
     margin-bottom: 15px;
     transition: background-color 0.3s, transform 0.15s;
     align-self: center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #showFormBtn:hover {
@@ -50,9 +53,16 @@ form {
     align-items: center;
 }
 
+/* Центриране на полетата във формата */
+form .form-item {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
 form label {
     font-weight: bold;
-    align-self: flex-start;
+    margin-bottom: 4px;
 }
 
 form input[type="text"],
@@ -97,6 +107,14 @@ form img {
 
 form img:hover {
     transform: scale(1.02);
+}
+
+/* Подредба на бутоните във формата с разстояние */
+form .form-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    width: 100%;
 }
 
 form button {
