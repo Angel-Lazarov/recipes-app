@@ -64,7 +64,7 @@ export default function Home() {
     return nameMatch && categoryMatch && ingredientMatch;
   });
 
-  const DEFAULT_IMAGE = '/default-recipe.jpg';
+const DEFAULT_IMAGE = process.env.PUBLIC_URL + '/default-recipe.jpg';
 
   return (
     <div>
