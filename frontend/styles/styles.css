@@ -1,3 +1,5 @@
+/* frontend/styles/styles.css - финална версия с модал */
+
 /* --- ОСНОВНИ --- */
 body {
     font-family: Arial, sans-serif;
@@ -35,16 +37,12 @@ h1 {
 }
 
 /* --- ФОРМА --- */
-.form-wrapper {
-    width: 100%;
-    max-width: 500px;
-    margin: 20px auto;
-}
-
 form {
     width: 100%;
+    max-width: 500px;
     border: 1px solid #d1c7b2;
     padding: 25px;
+    margin: 0 auto 30px auto; /* центриране */
     border-radius: 12px;
     background-color: #efe6dc;
     box-sizing: border-box;
@@ -158,7 +156,8 @@ p.error {
     background-color: #efe6dc;
     box-sizing: border-box;
     transition: transform 0.2s, box-shadow 0.2s;
-    min-height: 380px; /* фиксирана височина за preview */
+    cursor: pointer;
+    overflow: hidden;
 }
 
 .recipe:hover {
@@ -176,10 +175,6 @@ p.error {
 .recipe p {
     color: #4a4a4a;
     margin: 5px 0;
-}
-
-.recipe p strong {
-    font-weight: bold;
 }
 
 .recipe img {
@@ -229,15 +224,6 @@ p.error {
 .recipe button:last-of-type:hover {
     background-color: #b7a38d;
     transform: translateY(-1px);
-}
-
-.recipe-steps-preview {
-    white-space: pre-wrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 3; /* показва само първите 3 реда */
-    -webkit-box-orient: vertical;
 }
 
 /* --- ФИЛТРИ --- */
@@ -293,7 +279,7 @@ p.error {
     box-shadow: 0 0 6px rgba(199,159,112,0.4);
 }
 
-/* --- Адаптивност --- */
+/* --- АДАПТИВНОСТ --- */
 @media (max-width: 768px) {
     #recipeList {
         flex-direction: column;
@@ -318,4 +304,55 @@ p.error {
     .filter-item {
         gap: 8px;
     }
+}
+
+/* --- MODAL --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right:0;
+    bottom:0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #efe6dc;
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90%;
+    overflow-y: auto;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: #c79f70;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+    background-color: #b08752;
+}
+
+.modal-content img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 10px 0;
 }

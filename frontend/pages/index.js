@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
-import RecipeCard from '../components/RecipeCard';
+import RecipeModal from '../components/RecipeModal';
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
@@ -9,6 +9,7 @@ export default function Home() {
   const [editing, setEditing] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [filters, setFilters] = useState({ search: '', category: '', ingredient: '' });
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
 
   useEffect(() => {
     fetchRecipes()
@@ -75,23 +76,29 @@ export default function Home() {
         ➕ Добави нова рецепта
       </button>
 
-      {(showAdd || editing) && (
+      {showAdd && !editing && (
         <div className="form-wrapper">
           <RecipeForm
-            show={showAdd || !!editing}
+            show={showAdd}
+            onSaved={onSaved}
+            onCancel={() => setShowAdd(false)}
+          />
+        </div>
+      )}
+
+      {editing && (
+        <div className="form-wrapper">
+          <RecipeForm
+            show={!!editing}
             recipe={editing}
             onSaved={onSaved}
-            onCancel={() => {
-              setShowAdd(false);
-              setEditing(null);
-            }}
+            onCancel={() => setEditing(null)}
           />
         </div>
       )}
 
       <div className="filters-container">
         <h2>Търси по</h2>
-
         <div className="filter-item">
           <label>Име</label>
           <input
@@ -100,7 +107,6 @@ export default function Home() {
             onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
           />
         </div>
-
         <div className="filter-item">
           <label>Категория</label>
           <select
@@ -113,7 +119,6 @@ export default function Home() {
             ))}
           </select>
         </div>
-
         <div className="filter-item">
           <label>Съставки</label>
           <input
@@ -130,17 +135,29 @@ export default function Home() {
             <p>Няма намерени рецепти</p>
           ) : (
             filteredRecipes
-              .filter(r => !editing || r.id !== editing.id) // скриваме редактираната
+              .filter(r => !editing || r.id !== editing.id)
               .map(r => (
-                <RecipeCard
+                <div
+                  className="recipe"
                   key={r.id}
-                  recipe={r}
-                  onEdit={setEditing}
-                  onDelete={onDelete}
-                />
+                  onClick={() => setSelectedRecipe(r)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <h3>{r.title}</h3>
+                  <p><strong>Категория:</strong> {r.category}</p>
+                  {r.imageUrl && <img src={r.imageUrl} alt={r.title} />}
+                  <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
+                </div>
               ))
           )}
         </div>
+      )}
+
+      {selectedRecipe && (
+        <RecipeModal
+          recipe={selectedRecipe}
+          onClose={() => setSelectedRecipe(null)}
+        />
       )}
     </div>
   );
