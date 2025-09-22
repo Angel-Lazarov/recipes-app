@@ -82,8 +82,6 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
 
   if (!show) return null;
 
-  const isExistingCategory = categories.includes(category);
-
   return (
     <form onSubmit={submit}>
       <div className="form-item">
@@ -119,7 +117,8 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
           <option value="__new__">+ Нова категория</option>
         </select>
 
-        {(isCreatingCategory || (!isExistingCategory && category)) && (
+        {/* Input за нова категория се показва само когато потребителят избере "+ Нова категория" */}
+        {isCreatingCategory && (
           <input
             type="text"
             value={category}
