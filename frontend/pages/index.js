@@ -3,6 +3,12 @@ import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
 import RecipeModal from '../components/RecipeModal';
 
+// ✅ Utility функция за нормализация на категория
+function normalizeCategory(cat) {
+  if (!cat) return '';
+  return cat.trim().charAt(0).toUpperCase() + cat.trim().slice(1).toLowerCase();
+}
+
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,16 +49,19 @@ export default function Home() {
     }
   };
 
+  // ✅ Категории без дублиране и с нормализация
   const categories = Array.from(
-    new Set(recipes.map(r => r.category).filter(Boolean))
-  )
-    .map(cat => cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase())
-    .sort();
+    new Set(
+      recipes
+        .map(r => normalizeCategory(r.category))
+        .filter(Boolean)
+    )
+  ).sort();
 
   const filteredRecipes = recipes.filter(r => {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
     const categoryMatch = !filters.category ||
-      (r.category && (r.category.charAt(0).toUpperCase() + r.category.slice(1).toLowerCase()) === filters.category);
+      (normalizeCategory(r.category) === filters.category);
     const ingredientFilters = filters.ingredient
       .split(',')
       .map(i => i.trim().toLowerCase())
@@ -77,6 +86,7 @@ export default function Home() {
         <div className="form-wrapper">
           <RecipeForm
             show={showAdd}
+            categories={categories}   // 👈 добавен проп
             onSaved={onSaved}
             onCancel={() => setShowAdd(false)}
           />
@@ -88,6 +98,7 @@ export default function Home() {
           <RecipeForm
             show={!!editing}
             recipe={editing}
+            categories={categories}   // 👈 добавен проп
             onSaved={onSaved}
             onCancel={() => setEditing(null)}
           />
@@ -141,7 +152,7 @@ export default function Home() {
                 onClick={() => setSelectedRecipe(r)}
               >
                 <h3>{r.title}</h3>
-                <p><strong>Категория:</strong> {r.category}</p>
+                <p><strong>Категория:</strong> {normalizeCategory(r.category)}</p>
                 <img src={r.imageUrl || DEFAULT_IMAGE} alt={r.title} />
                 <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
                 <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { uploadImage, createRecipe, updateRecipe } from '../utils/api';
 
-export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
+export default function RecipeForm({ show, recipe = null, categories = [], onSaved, onCancel }) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [ingredients, setIngredients] = useState('');
@@ -72,27 +72,72 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
 
   if (!show) return null;
 
+  // Проверка дали категорията е нова
+  const isNewCategory = category && !categories.includes(category);
+
   return (
     <form onSubmit={submit}>
       <div className="form-item">
         <label>Име на рецепта</label>
-        <input type="text" value={title} placeholder="Супа от зеленчуци" onChange={e => setTitle(e.target.value)} required />
+        <input
+          type="text"
+          value={title}
+          placeholder="Супа от зеленчуци"
+          onChange={e => setTitle(e.target.value)}
+          required
+        />
       </div>
 
       <div className="form-item">
         <label>Категория</label>
-        <input type="text" value={category} placeholder="Супа, Десерт..." onChange={e => setCategory(e.target.value)} required />
+        <select
+          value={categories.includes(category) ? category : '__new__'}
+          onChange={e => {
+            if (e.target.value === '__new__') {
+              setCategory('');
+            } else {
+              setCategory(e.target.value);
+            }
+          }}
+        >
+          <option value="">Избери категория</option>
+          {categories.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+          <option value="__new__">+ Нова категория</option>
+        </select>
+
+        {(isNewCategory || category === '') && (
+          <input
+            type="text"
+            value={category}
+            placeholder="Въведи нова категория"
+            onChange={e => setCategory(e.target.value)}
+            required
+          />
+        )}
       </div>
 
       <div className="form-item">
         <label>Съставки</label>
-        <input type="text" value={ingredients} placeholder="захар, брашно, яйца" onChange={e => setIngredients(e.target.value)} required />
+        <input
+          type="text"
+          value={ingredients}
+          placeholder="захар, брашно, яйца"
+          onChange={e => setIngredients(e.target.value)}
+          required
+        />
         <small>Разделени със запетая</small>
       </div>
 
       <div className="form-item">
         <label>Стъпки</label>
-        <textarea value={steps} placeholder="Смесете съставките..." onChange={e => setSteps(e.target.value)} required />
+        <textarea
+          value={steps}
+          placeholder="Смесете съставките..."
+          onChange={e => setSteps(e.target.value)}
+          required
+        />
       </div>
 
       <div className="form-item">
@@ -103,7 +148,9 @@ export default function RecipeForm({ show, recipe = null, onSaved, onCancel }) {
       {preview && <img src={preview} alt="Преглед" />}
 
       <div className="form-buttons">
-        <button type="submit" disabled={busy}>{busy ? (recipe ? 'Запазване...' : 'Добавяне...') : (recipe ? 'Запази' : 'Добави')}</button>
+        <button type="submit" disabled={busy}>
+          {busy ? (recipe ? 'Запазване...' : 'Добавяне...') : (recipe ? 'Запази' : 'Добави')}
+        </button>
         <button type="button" onClick={onCancel}>Отказ</button>
       </div>
 
