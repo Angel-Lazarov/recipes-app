@@ -1,4 +1,4 @@
-/* frontend/styles/styles.css - версия с оптимизиран модал за стъпки */
+/* frontend/styles/styles.css - финална версия с коригиран модал */
 
 /* --- ОСНОВНИ --- */
 body {
@@ -254,57 +254,51 @@ p.error {
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    overflow-y: auto;
     padding: 20px;
 }
 
 .modal-content {
     background-color: #efe6dc;
     border-radius: 12px;
-    padding: 15px; /* намалено за компактност */
+    padding: 15px; /* по-компактно */
     max-width: 600px;
     width: 100%;
     box-sizing: border-box;
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 6px; /* по-малко разстояние между елементите */
+    gap: 8px; /* по-малко разстояние между елементите */
+    max-height: 90vh; /* за да не излиза от екрана */
+    overflow-y: auto;
 }
 
 .modal-close {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 12px;
+    right: 12px;
     background: none;
     border: none;
     font-size: 20px;
     cursor: pointer;
 }
 
-/* Премахваме снимката от модала */
-.modal-content img {
-    display: none;
+.modal-content p,
+.modal-content h3 {
+    margin: 0;
 }
 
-/* Стъпки да се показват в целия модал */
-.modal-steps {
-    max-height: 60vh; /* за всички резолюции */
-    overflow-y: auto;
-    padding-right: 5px;
+.modal-content .steps {
+    white-space: pre-wrap; /* пренасяне на нов ред */
+    word-wrap: break-word; /* за по-дълги думи */
+    line-height: 1.4;
 }
 
-.modal-steps p {
-    margin: 2px 0;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-}
-
-/* Бутони в модала */
+/* Бутоните в модала */
 .modal-buttons {
     display: flex;
     gap: 10px;
     justify-content: center;
-    margin-top: 8px; /* намалено за компактност */
+    margin-top: 5px;
 }
 
 .modal-buttons button {
@@ -362,11 +356,6 @@ p.error {
 
     .modal-content {
         max-width: 100%;
-        padding: 10px; /* още по-компактно */
-    }
-
-    .modal-buttons {
-        flex-direction: column;
-        gap: 6px;
+        padding: 10px;
     }
 }
