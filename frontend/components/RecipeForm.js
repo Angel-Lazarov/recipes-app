@@ -59,7 +59,7 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
         imageUrl = res.url;
       }
 
-      // ✅ Първата буква на заглавието винаги с главна буква
+      // Първата буква на заглавието винаги с главна буква
       const formattedTitle = title.charAt(0).toUpperCase() + title.slice(1);
 
       const data = {
@@ -82,8 +82,7 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
 
   if (!show) return null;
 
-  // Проверка дали категорията е нова
-  const isNewCategory = category && !categories.includes(category);
+  const isExistingCategory = categories.includes(category);
 
   return (
     <form onSubmit={submit}>
@@ -102,7 +101,7 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
       <div className="form-item">
         <label>Категория</label>
         <select
-          value={categories.includes(category) ? category : '__new__'}
+          value={isExistingCategory ? category : '__new__'}
           onChange={e => {
             if (e.target.value === '__new__') {
               setCategory('');
@@ -120,7 +119,7 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
           <option value="__new__">+ Нова категория</option>
         </select>
 
-        {(isNewCategory || isCreatingCategory || category === '') && (
+        {(isCreatingCategory || (!isExistingCategory && category)) && (
           <input
             type="text"
             value={category}
