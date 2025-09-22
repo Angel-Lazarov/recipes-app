@@ -1,4 +1,4 @@
-/* frontend/styles/styles.css - модифициран за още по-компактен модал */
+/* frontend/styles/styles.css - модифициран за центриран модал и заглавие */
 
 /* --- ОСНОВНИ --- */
 body {
@@ -256,21 +256,29 @@ p.error {
     z-index: 1000;
     overflow-y: auto;
     padding: 10px;
+    box-sizing: border-box;
 }
 
 .modal-content {
     background-color: #efe6dc;
     border-radius: 12px;
-    padding: 8px; /* още по-компактно */
+    padding: 10px; /* компактно */
     max-width: 600px;
     width: 100%;
-    max-height: 90vh; /* не излиза извън екрана */
+    max-height: 90vh; /* модалът расте, но не излиза от екрана */
+    overflow-y: auto;
     box-sizing: border-box;
     position: relative;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    overflow-y: auto; /* позволяваме скрол за много дълги стъпки */
+}
+
+/* Центрирано заглавие в модала */
+.modal-content h2 {
+    text-align: center;
+    margin: 6px 0;
+    font-weight: bold;
 }
 
 .modal-close {
@@ -289,12 +297,12 @@ p.error {
     margin: 2px 0;
 }
 
-/* Бутоните на един ред и центрирани */
+/* Бутоните центрирани */
 .modal-buttons {
     display: flex;
     gap: 6px;
     justify-content: center;
-    margin-top: 4px;
+    margin-top: 6px;
 }
 
 .modal-buttons button {
@@ -346,12 +354,8 @@ p.error {
 
     .modal-content {
         max-width: 90%;
-        padding: 6px;
+        padding: 8px;
         gap: 3px;
-    }
-
-    .modal-buttons {
-        gap: 4px;
     }
 }
 
@@ -362,7 +366,7 @@ p.error {
 
     .modal-content {
         max-width: 95%;
-        padding: 4px;
+        padding: 6px;
         gap: 2px;
     }
 
