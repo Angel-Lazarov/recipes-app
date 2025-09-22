@@ -255,20 +255,22 @@ p.error {
     align-items: center;
     z-index: 1000;
     overflow-y: auto;
-    padding: 20px;
+    padding: 10px;
 }
 
 .modal-content {
     background-color: #efe6dc;
     border-radius: 12px;
-    padding: 10px; /* още по-компактно */
+    padding: 8px; /* още по-компактно */
     max-width: 600px;
     width: 100%;
+    max-height: 90vh; /* не излиза извън екрана */
     box-sizing: border-box;
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 4px; /* намалено разстояние между елементи */
+    gap: 4px;
+    overflow-y: auto; /* позволяваме скрол за много дълги стъпки */
 }
 
 .modal-close {
@@ -287,11 +289,11 @@ p.error {
     margin: 2px 0;
 }
 
-/* Бутоните на един ред */
+/* Бутоните на един ред и центрирани */
 .modal-buttons {
     display: flex;
     gap: 6px;
-    justify-content: flex-end;
+    justify-content: center;
     margin-top: 4px;
 }
 
@@ -344,13 +346,11 @@ p.error {
 
     .modal-content {
         max-width: 90%;
-        padding: 8px;
+        padding: 6px;
         gap: 3px;
     }
 
     .modal-buttons {
-        flex-direction: row;
-        justify-content: flex-end;
         gap: 4px;
     }
 }
@@ -362,7 +362,7 @@ p.error {
 
     .modal-content {
         max-width: 95%;
-        padding: 6px;
+        padding: 4px;
         gap: 2px;
     }
 
