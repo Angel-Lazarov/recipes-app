@@ -1,4 +1,4 @@
-/* frontend/styles/styles.css - преработена версия с модал карти, които се побират на екрана */
+/* frontend/styles/styles.css - коригирана версия за модал без вертикален скрол */
 
 /* --- ОСНОВНИ --- */
 body {
@@ -259,18 +259,17 @@ p.error {
 }
 
 .modal-content {
-    max-height: 90vh; /* цялата карта се събира на екрана */
-    overflow-y: auto; /* ако съдържанието е по-голямо, скрол */
     background-color: #efe6dc;
     border-radius: 12px;
-    padding: 25px;
+    padding: 20px; /* намалено */
     max-width: 600px;
     width: 100%;
     box-sizing: border-box;
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px; /* намалено */
+    overflow-y: hidden; /* премахнат скрол */
 }
 
 .modal-close {
@@ -286,7 +285,7 @@ p.error {
 /* Ограничение за снимките в модала */
 .modal-content img {
     max-width: 100%;
-    max-height: 70vh; /* картинката не излиза от модала */
+    max-height: 50vh; /* намалена височина */
     width: auto;
     height: auto;
     object-fit: contain;
