@@ -12,7 +12,8 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
   const [error, setError] = useState('');
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
-  const categoryInputRef = useRef(null);
+  const titleInputRef = useRef(null);
+
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
   useEffect(() => {
@@ -35,13 +36,6 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
     setError('');
   }, [recipe, show]);
 
-  // ✅ Фокусиране на input полето за нова категория
-  useEffect(() => {
-    if (isCreatingCategory && categoryInputRef.current) {
-      categoryInputRef.current.focus();
-    }
-  }, [isCreatingCategory]);
-
   const handleFileChange = (e) => {
     const f = e.target.files[0];
     setFile(f);
@@ -56,27 +50,26 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
 
   const submit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    if (isCreatingCategory && !category.trim()) {
-      setError('Моля, въведете нова категория');
-      return;
-    }
-
     setBusy(true);
+    setError('');
     try {
       let imageUrl = preview;
       if (file) {
         const res = await uploadImage(file);
         imageUrl = res.url;
       }
+
+      // ✅ Първата буква на заглавието винаги с главна буква
+      const formattedTitle = title.charAt(0).toUpperCase() + title.slice(1);
+
       const data = {
-        title,
+        title: formattedTitle,
         category,
         ingredients: ingredients.split(',').map(i => i.trim()),
         steps: steps.split('\n').map(s => s.trim()),
         imageUrl
       };
+
       const saved = recipe ? await updateRecipe(recipe.id, data) : await createRecipe(data);
       onSaved(saved);
     } catch (err) {
@@ -89,11 +82,15 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
 
   if (!show) return null;
 
+  // Проверка дали категорията е нова
+  const isNewCategory = category && !categories.includes(category);
+
   return (
     <form onSubmit={submit}>
       <div className="form-item">
         <label>Име на рецепта</label>
         <input
+          ref={titleInputRef}
           type="text"
           value={title}
           placeholder="Супа от зеленчуци"
@@ -105,27 +102,26 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
       <div className="form-item">
         <label>Категория</label>
         <select
-          value={isCreatingCategory ? '__new__' : (categories.includes(category) ? category : '')}
+          value={categories.includes(category) ? category : '__new__'}
           onChange={e => {
             if (e.target.value === '__new__') {
-              setIsCreatingCategory(true);
               setCategory('');
+              setIsCreatingCategory(true);
             } else {
-              setIsCreatingCategory(false);
               setCategory(e.target.value);
+              setIsCreatingCategory(false);
             }
           }}
         >
-          <option value="">Избери категория или създай нова</option>
+          <option value="">Избери категория</option>
           {categories.map(cat => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
           <option value="__new__">+ Нова категория</option>
         </select>
 
-        {isCreatingCategory && (
+        {(isNewCategory || isCreatingCategory || category === '') && (
           <input
-            ref={categoryInputRef} // ✅ реф за автоматичен фокус
             type="text"
             value={category}
             placeholder="Въведи нова категория"
@@ -162,7 +158,7 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
         <input type="file" accept="image/*" onChange={handleFileChange} />
       </div>
 
-      {preview && <img src={preview} alt={`Преглед на ${title}`} />}
+      {preview && <img src={preview} alt="Преглед" />}
 
       <div className="form-buttons">
         <button type="submit" disabled={busy}>
