@@ -1,4 +1,4 @@
-/* frontend/styles/styles.css - финална версия */
+/* frontend/styles/styles.css - преработена версия с фиксирани снимки в модал */
 
 /* --- ОСНОВНИ --- */
 body {
@@ -281,11 +281,16 @@ p.error {
     cursor: pointer;
 }
 
+/* --- Ограничение за снимките в модала --- */
 .modal-content img {
     max-width: 100%;
+    max-height: 70vh; /* да не излиза от екрана */
+    width: auto;
     height: auto;
+    object-fit: contain;
     border-radius: 8px;
-    object-fit: cover;
+    display: block;
+    margin: 0 auto;
 }
 
 .modal-buttons {
