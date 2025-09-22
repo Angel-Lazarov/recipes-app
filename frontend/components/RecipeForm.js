@@ -99,7 +99,7 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
       <div className="form-item">
         <label>Категория</label>
         <select
-          value={category || '__placeholder__'}
+          value={category}
           onChange={e => {
             if (e.target.value === '__new__') {
               setCategory('');
@@ -110,14 +110,14 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
             }
           }}
         >
-          <option value="__placeholder__">Избери категория или създай нова</option>
+          <option value="">Избери категория или създай нова</option>
           {categories.map(cat => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
           <option value="__new__">+ Нова категория</option>
         </select>
 
-        {/* Input за нова категория се показва само когато потребителят избере "+ Нова категория" */}
+        {/* Input за нова категория се показва само при избор на "+ Нова категория" */}
         {isCreatingCategory && (
           <input
             type="text"
