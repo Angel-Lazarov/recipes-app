@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
 import RecipeModal from '../components/RecipeModal';
@@ -18,6 +18,10 @@ export default function Home() {
   const [filters, setFilters] = useState({ search: '', category: '', ingredient: '' });
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
+  // 👉 рефове за скрол
+  const formRef = useRef(null);
+  const modalRef = useRef(null);
+
   // Обновява масива с категории въз основа на подаден списък рецепти
   const updateCategories = (recipesList) => {
     const cats = Array.from(
@@ -29,7 +33,6 @@ export default function Home() {
   useEffect(() => {
     fetchRecipes()
       .then(data => {
-        // Нормализираме категорията за всяка рецепта, за да държим стойностите консистентни
         const normalizedRecipes = data.map(r => ({
           ...r,
           category: normalizeCategory(r.category),
@@ -46,7 +49,6 @@ export default function Home() {
   }, []);
 
   const onSaved = (r) => {
-    // Нормализираме получената (запазена) рецепта, за да съвпада с нашия categories масив
     const normalizedCategory = normalizeCategory(r.category);
     const savedNormalized = { ...r, category: normalizedCategory };
 
@@ -61,8 +63,6 @@ export default function Home() {
     }
 
     setRecipes(updatedRecipes);
-
-    // Обновяваме списъка с категории въз основа на новия списък рецепти
     updateCategories(updatedRecipes);
   };
 
@@ -78,6 +78,20 @@ export default function Home() {
       alert('Грешка при изтриване');
     }
   };
+
+  // 👉 скрол при формата
+  useEffect(() => {
+    if (editing || showAdd) {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [editing, showAdd]);
+
+  // 👉 скрол при модал
+  useEffect(() => {
+    if (selectedRecipe) {
+      modalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [selectedRecipe]);
 
   const filteredRecipes = recipes.filter(r => {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
@@ -105,25 +119,17 @@ export default function Home() {
         ➕ Добави нова рецепта
       </button>
 
-      {showAdd && !editing && (
-        <div className="form-wrapper">
+      {(showAdd || editing) && (
+        <div className="form-wrapper" ref={formRef}>
           <RecipeForm
-            show={showAdd}
-            categories={categories}
-            onSaved={onSaved}
-            onCancel={() => setShowAdd(false)}
-          />
-        </div>
-      )}
-
-      {editing && (
-        <div className="form-wrapper">
-          <RecipeForm
-            show={!!editing}
+            show={!!(showAdd || editing)}
             recipe={editing}
             categories={categories}
             onSaved={onSaved}
-            onCancel={() => setEditing(null)}
+            onCancel={() => {
+              setShowAdd(false);
+              setEditing(null);
+            }}
           />
         </div>
       )}
@@ -186,15 +192,17 @@ export default function Home() {
       )}
 
       {selectedRecipe && (
-        <RecipeModal
-          recipe={selectedRecipe}
-          onClose={() => setSelectedRecipe(null)}
-          onEdit={() => {
-            setEditing(selectedRecipe);
-            setSelectedRecipe(null);
-          }}
-          onDelete={() => onDelete(selectedRecipe.id)}
-        />
+        <div ref={modalRef}>
+          <RecipeModal
+            recipe={selectedRecipe}
+            onClose={() => setSelectedRecipe(null)}
+            onEdit={() => {
+              setEditing(selectedRecipe);
+              setSelectedRecipe(null);
+            }}
+            onDelete={() => onDelete(selectedRecipe.id)}
+          />
+        </div>
       )}
     </div>
   );
