@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
 import RecipeModal from '../components/RecipeModal';
@@ -16,6 +16,8 @@ export default function Home() {
   const [showAdd, setShowAdd] = useState(false);
   const [filters, setFilters] = useState({ search: '', category: '', ingredient: '' });
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+
+  const formWrapperRef = useRef(null); // ✅ реф за скрол
 
   useEffect(() => {
     fetchRecipes()
@@ -79,13 +81,19 @@ export default function Home() {
       <button id="showFormBtn" onClick={() => {
         setShowAdd(true);
         setEditing(null);
+        // Скрол към формата за добавяне
+        setTimeout(() => {
+          if (formWrapperRef.current) {
+            formWrapperRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 50);
       }}>
         ➕ Добави нова рецепта
       </button>
 
       {/* Форма за добавяне или редакция */}
       {(showAdd || editing) && (
-        <div className="form-wrapper">
+        <div className="form-wrapper" ref={formWrapperRef}>
           <RecipeForm
             show={showAdd || !!editing}
             recipe={editing}
@@ -161,10 +169,16 @@ export default function Home() {
           recipe={selectedRecipe}
           onClose={() => setSelectedRecipe(null)}
           onEdit={() => {
-            setEditing(null); // принудително премахваме текущото editing
-            setTimeout(() => setEditing(selectedRecipe), 0); // задаваме новата рецепта за редакция
+            setEditing(selectedRecipe);
             setShowAdd(false);
             setSelectedRecipe(null);
+
+            // Скролваме формата за редакция във видимата част на екрана
+            setTimeout(() => {
+              if (formWrapperRef.current) {
+                formWrapperRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 50);
           }}
           onDelete={() => onDelete(selectedRecipe.id)}
         />
