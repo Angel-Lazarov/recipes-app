@@ -101,7 +101,7 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
       <div className="form-item">
         <label>Категория</label>
         <select
-          value={isExistingCategory ? category : (isCreatingCategory ? '__new__' : '__placeholder__')}
+          value={category || '__placeholder__'}
           onChange={e => {
             if (e.target.value === '__new__') {
               setCategory('');
