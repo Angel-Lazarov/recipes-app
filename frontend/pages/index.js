@@ -3,7 +3,6 @@ import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
 import RecipeModal from '../components/RecipeModal';
 
-// Utility функция за нормализация на категория (първа буква главна)
 function normalizeCategory(cat) {
   if (!cat) return '';
   return cat.trim().charAt(0).toUpperCase() + cat.trim().slice(1).toLowerCase();
@@ -18,11 +17,9 @@ export default function Home() {
   const [filters, setFilters] = useState({ search: '', category: '', ingredient: '' });
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
-  // 👉 рефове за скрол
   const formRef = useRef(null);
   const modalRef = useRef(null);
 
-  // Обновява масива с категории въз основа на подаден списък рецепти
   const updateCategories = (recipesList) => {
     const cats = Array.from(
       new Set(recipesList.map(r => normalizeCategory(r.category)).filter(Boolean))
@@ -79,14 +76,12 @@ export default function Home() {
     }
   };
 
-  // 👉 скрол при формата
   useEffect(() => {
     if (editing || showAdd) {
       formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [editing, showAdd]);
 
-  // 👉 скрол при модал
   useEffect(() => {
     if (selectedRecipe) {
       modalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -109,87 +104,89 @@ export default function Home() {
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
   return (
-    <div>
-      <h1>📖 Моите рецепти</h1>
+    <>
+      <div className="main-container">
+        <h1>📖 Моите рецепти</h1>
 
-      <button id="showFormBtn" onClick={() => {
-        setShowAdd(prev => !prev);
-        setEditing(null);
-      }}>
-        ➕ Добави нова рецепта
-      </button>
+        <button id="showFormBtn" onClick={() => {
+          setShowAdd(prev => !prev);
+          setEditing(null);
+        }}>
+          ➕ Добави нова рецепта
+        </button>
 
-      {(showAdd || editing) && (
-        <div className="form-wrapper" ref={formRef}>
-          <RecipeForm
-            show={!!(showAdd || editing)}
-            recipe={editing}
-            categories={categories}
-            onSaved={onSaved}
-            onCancel={() => {
-              setShowAdd(false);
-              setEditing(null);
-            }}
-          />
+        {(showAdd || editing) && (
+          <div className="form-wrapper" ref={formRef}>
+            <RecipeForm
+              show={!!(showAdd || editing)}
+              recipe={editing}
+              categories={categories}
+              onSaved={onSaved}
+              onCancel={() => {
+                setShowAdd(false);
+                setEditing(null);
+              }}
+            />
+          </div>
+        )}
+
+        <div className="filters-container">
+          <h2>Търси по</h2>
+
+          <div className="filter-item">
+            <label>Име</label>
+            <input
+              placeholder="Супа от зеленчуци"
+              value={filters.search}
+              onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
+            />
+          </div>
+
+          <div className="filter-item">
+            <label>Категория</label>
+            <select
+              value={filters.category}
+              onChange={e => setFilters(prev => ({ ...prev, category: e.target.value }))}
+            >
+              <option value="">Всички категории</option>
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-item">
+            <label>Съставки</label>
+            <input
+              placeholder="захар, брашно, яйца"
+              value={filters.ingredient}
+              onChange={e => setFilters(prev => ({ ...prev, ingredient: e.target.value }))}
+            />
+          </div>
         </div>
-      )}
 
-      <div className="filters-container">
-        <h2>Търси по</h2>
-
-        <div className="filter-item">
-          <label>Име</label>
-          <input
-            placeholder="Супа от зеленчуци"
-            value={filters.search}
-            onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
-          />
-        </div>
-
-        <div className="filter-item">
-          <label>Категория</label>
-          <select
-            value={filters.category}
-            onChange={e => setFilters(prev => ({ ...prev, category: e.target.value }))}
-          >
-            <option value="">Всички категории</option>
-            {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="filter-item">
-          <label>Съставки</label>
-          <input
-            placeholder="захар, брашно, яйца"
-            value={filters.ingredient}
-            onChange={e => setFilters(prev => ({ ...prev, ingredient: e.target.value }))}
-          />
-        </div>
+        {loading ? <p>Зареждане...</p> : (
+          <div id="recipeList">
+            {filteredRecipes.length === 0 ? (
+              <p>Няма намерени рецепти</p>
+            ) : (
+              filteredRecipes.map(r => (
+                <div
+                  className="recipe"
+                  key={r.id}
+                  onClick={() => setSelectedRecipe(r)}
+                >
+                  <h3>{r.title}</h3>
+                  <p><strong>Категория:</strong> {normalizeCategory(r.category)}</p>
+                  <img src={r.imageUrl || DEFAULT_IMAGE} alt={r.title} />
+                  <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
+                  <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
-
-      {loading ? <p>Зареждане...</p> : (
-        <div id="recipeList">
-          {filteredRecipes.length === 0 ? (
-            <p>Няма намерени рецепти</p>
-          ) : (
-            filteredRecipes.map(r => (
-              <div
-                className="recipe"
-                key={r.id}
-                onClick={() => setSelectedRecipe(r)}
-              >
-                <h3>{r.title}</h3>
-                <p><strong>Категория:</strong> {normalizeCategory(r.category)}</p>
-                <img src={r.imageUrl || DEFAULT_IMAGE} alt={r.title} />
-                <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
-                <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
-              </div>
-            ))
-          )}
-        </div>
-      )}
 
       {selectedRecipe && (
         <div ref={modalRef}>
@@ -204,6 +201,6 @@ export default function Home() {
           />
         </div>
       )}
-    </div>
+    </>
   );
 }
