@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
 import RecipeModal from '../components/RecipeModal';
 
-// ✅ Utility функция за нормализация на категория
+// Utility функция за нормализация на категория
 function normalizeCategory(cat) {
   if (!cat) return '';
   return cat.trim().charAt(0).toUpperCase() + cat.trim().slice(1).toLowerCase();
@@ -49,28 +49,26 @@ export default function Home() {
     }
   };
 
-  // ✅ Категории без дублиране и с нормализация
-  const categories = Array.from(
-    new Set(
-      recipes
-        .map(r => normalizeCategory(r.category))
-        .filter(Boolean)
-    )
-  ).sort();
+  // Категории без дублиране и с нормализация
+  const categories = useMemo(() => {
+    return Array.from(new Set(recipes.map(r => normalizeCategory(r.category)).filter(Boolean))).sort();
+  }, [recipes]);
 
-  const filteredRecipes = recipes.filter(r => {
-    const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
-    const categoryMatch = !filters.category ||
-      (normalizeCategory(r.category) === filters.category);
-    const ingredientFilters = filters.ingredient
-      .split(',')
-      .map(i => i.trim().toLowerCase())
-      .filter(Boolean);
-    const ingredientMatch = ingredientFilters.every(f =>
-      r.ingredients?.some(i => i.toLowerCase().includes(f))
-    );
-    return nameMatch && categoryMatch && ingredientMatch;
-  });
+  // Филтрирани рецепти
+  const filteredRecipes = useMemo(() => {
+    return recipes.filter(r => {
+      const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
+      const categoryMatch = !filters.category || normalizeCategory(r.category) === filters.category;
+      const ingredientFilters = filters.ingredient
+        .split(',')
+        .map(i => i.trim().toLowerCase())
+        .filter(Boolean);
+      const ingredientMatch = ingredientFilters.every(f =>
+        r.ingredients?.some(i => i.toLowerCase().includes(f))
+      );
+      return nameMatch && categoryMatch && ingredientMatch;
+    });
+  }, [recipes, filters]);
 
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
@@ -78,33 +76,27 @@ export default function Home() {
     <div>
       <h1>📖 Моите рецепти</h1>
 
-      <button id="showFormBtn" onClick={() => setShowAdd(prev => !prev)}>
+      <button id="showFormBtn" onClick={() => {
+        setShowAdd(true);
+        setEditing(null);
+      }}>
         ➕ Добави нова рецепта
       </button>
 
-      {showAdd && !editing && (
+      {/* Форма за добавяне или редакция */}
+      {(showAdd || editing) && (
         <div className="form-wrapper">
           <RecipeForm
-            show={showAdd}
-            categories={categories}   // 👈 добавен проп
-            onSaved={onSaved}
-            onCancel={() => setShowAdd(false)}
-          />
-        </div>
-      )}
-
-      {editing && (
-        <div className="form-wrapper">
-          <RecipeForm
-            show={!!editing}
+            show={showAdd || !!editing}
             recipe={editing}
-            categories={categories}   // 👈 добавен проп
+            categories={categories}
             onSaved={onSaved}
-            onCancel={() => setEditing(null)}
+            onCancel={() => { setShowAdd(false); setEditing(null); }}
           />
         </div>
       )}
 
+      {/* Филтри */}
       <div className="filters-container">
         <h2>Търси по</h2>
 
@@ -140,6 +132,7 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Списък с рецепти */}
       {loading ? <p>Зареждане...</p> : (
         <div id="recipeList">
           {filteredRecipes.length === 0 ? (
@@ -162,12 +155,14 @@ export default function Home() {
         </div>
       )}
 
+      {/* Модал за детайли */}
       {selectedRecipe && (
         <RecipeModal
           recipe={selectedRecipe}
           onClose={() => setSelectedRecipe(null)}
           onEdit={() => {
             setEditing(selectedRecipe);
+            setShowAdd(false);
             setSelectedRecipe(null);
           }}
           onDelete={() => onDelete(selectedRecipe.id)}
