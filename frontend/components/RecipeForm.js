@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { uploadImage, createRecipe, updateRecipe } from '../utils/api';
 
 export default function RecipeForm({ show, recipe = null, categories = [], onSaved, onCancel }) {
@@ -10,7 +10,9 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
   const [preview, setPreview] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
+  const categoryInputRef = useRef(null);
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
   useEffect(() => {
@@ -20,16 +22,25 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
       setIngredients((recipe.ingredients || []).join(', '));
       setSteps((recipe.steps || []).join('\n'));
       setPreview(recipe.imageUrl || DEFAULT_IMAGE);
+      setIsCreatingCategory(false);
     } else {
       setTitle('');
       setCategory('');
       setIngredients('');
       setSteps('');
       setPreview(DEFAULT_IMAGE);
+      setIsCreatingCategory(false);
     }
     setFile(null);
     setError('');
   }, [recipe, show]);
+
+  // ✅ Фокусиране на input полето за нова категория
+  useEffect(() => {
+    if (isCreatingCategory && categoryInputRef.current) {
+      categoryInputRef.current.focus();
+    }
+  }, [isCreatingCategory]);
 
   const handleFileChange = (e) => {
     const f = e.target.files[0];
@@ -45,8 +56,14 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
 
   const submit = async (e) => {
     e.preventDefault();
-    setBusy(true);
     setError('');
+
+    if (isCreatingCategory && !category.trim()) {
+      setError('Моля, въведете нова категория');
+      return;
+    }
+
+    setBusy(true);
     try {
       let imageUrl = preview;
       if (file) {
@@ -72,9 +89,6 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
 
   if (!show) return null;
 
-  // Проверка дали категорията е нова
-  const isNewCategory = category && !categories.includes(category);
-
   return (
     <form onSubmit={submit}>
       <div className="form-item">
@@ -91,24 +105,27 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
       <div className="form-item">
         <label>Категория</label>
         <select
-          value={categories.includes(category) ? category : '__new__'}
+          value={isCreatingCategory ? '__new__' : (categories.includes(category) ? category : '')}
           onChange={e => {
             if (e.target.value === '__new__') {
+              setIsCreatingCategory(true);
               setCategory('');
             } else {
+              setIsCreatingCategory(false);
               setCategory(e.target.value);
             }
           }}
         >
-          <option value="">Избери категория</option>
+          <option value="">Избери категория или създай нова</option>
           {categories.map(cat => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
           <option value="__new__">+ Нова категория</option>
         </select>
 
-        {(isNewCategory || category === '') && (
+        {isCreatingCategory && (
           <input
+            ref={categoryInputRef} // ✅ реф за автоматичен фокус
             type="text"
             value={category}
             placeholder="Въведи нова категория"
@@ -145,7 +162,7 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
         <input type="file" accept="image/*" onChange={handleFileChange} />
       </div>
 
-      {preview && <img src={preview} alt="Преглед" />}
+      {preview && <img src={preview} alt={`Преглед на ${title}`} />}
 
       <div className="form-buttons">
         <button type="submit" disabled={busy}>
