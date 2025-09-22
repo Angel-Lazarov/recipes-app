@@ -2,15 +2,12 @@
 export default function RecipeModal({ recipe, onClose, onEdit, onDelete }) {
   if (!recipe) return null;
 
-  const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
-
   return (
     <div className="modal-backdrop">
       <div className="modal-content">
         <button className="modal-close" onClick={onClose}>✖</button>
         <h2>{recipe.title}</h2>
         <p><strong>Категория:</strong> {recipe.category}</p>
-        <img src={recipe.imageUrl || DEFAULT_IMAGE} alt={recipe.title} />
         <p><strong>Продукти:</strong> {recipe.ingredients?.join(', ')}</p>
         <p><strong>Стъпки:</strong> {recipe.steps?.join('\n')}</p>
         <div className="modal-buttons">
