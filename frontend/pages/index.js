@@ -3,7 +3,7 @@ import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
 import RecipeModal from '../components/RecipeModal';
 
-// Utility функция за нормализация на категория
+// Utility функция за нормализация на категория (първа буква главна)
 function normalizeCategory(cat) {
   if (!cat) return '';
   return cat.trim().charAt(0).toUpperCase() + cat.trim().slice(1).toLowerCase();
@@ -18,7 +18,7 @@ export default function Home() {
   const [filters, setFilters] = useState({ search: '', category: '', ingredient: '' });
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
-  // Функция за обновяване на списъка с категории
+  // Обновява масива с категории въз основа на подаден списък рецепти
   const updateCategories = (recipesList) => {
     const cats = Array.from(
       new Set(recipesList.map(r => normalizeCategory(r.category)).filter(Boolean))
@@ -29,8 +29,13 @@ export default function Home() {
   useEffect(() => {
     fetchRecipes()
       .then(data => {
-        setRecipes(data);
-        updateCategories(data);
+        // Нормализираме категорията за всяка рецепта, за да държим стойностите консистентни
+        const normalizedRecipes = data.map(r => ({
+          ...r,
+          category: normalizeCategory(r.category),
+        }));
+        setRecipes(normalizedRecipes);
+        updateCategories(normalizedRecipes);
       })
       .catch(err => {
         console.error(err);
@@ -41,18 +46,23 @@ export default function Home() {
   }, []);
 
   const onSaved = (r) => {
-    const exists = recipes.find(p => p.id === r.id);
+    // Нормализираме получената (запазена) рецепта, за да съвпада с нашия categories масив
+    const normalizedCategory = normalizeCategory(r.category);
+    const savedNormalized = { ...r, category: normalizedCategory };
+
+    const exists = recipes.find(p => p.id === savedNormalized.id);
     let updatedRecipes;
     if (exists) {
-      updatedRecipes = recipes.map(p => p.id === r.id ? r : p);
+      updatedRecipes = recipes.map(p => p.id === savedNormalized.id ? savedNormalized : p);
       setEditing(null);
     } else {
-      updatedRecipes = [...recipes, r];
+      updatedRecipes = [...recipes, savedNormalized];
       setShowAdd(false);
     }
+
     setRecipes(updatedRecipes);
 
-    // Обновяване на категориите
+    // Обновяваме списъка с категории въз основа на новия списък рецепти
     updateCategories(updatedRecipes);
   };
 
@@ -88,7 +98,10 @@ export default function Home() {
     <div>
       <h1>📖 Моите рецепти</h1>
 
-      <button id="showFormBtn" onClick={() => setShowAdd(prev => !prev)}>
+      <button id="showFormBtn" onClick={() => {
+        setShowAdd(prev => !prev);
+        setEditing(null);
+      }}>
         ➕ Добави нова рецепта
       </button>
 
