@@ -101,7 +101,7 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
       <div className="form-item">
         <label>Категория</label>
         <select
-          value={isExistingCategory ? category : '__new__'}
+          value={isExistingCategory ? category : (isCreatingCategory ? '__new__' : '__placeholder__')}
           onChange={e => {
             if (e.target.value === '__new__') {
               setCategory('');
@@ -112,7 +112,7 @@ export default function RecipeForm({ show, recipe = null, categories = [], onSav
             }
           }}
         >
-          <option value="">Избери категория</option>
+          <option value="__placeholder__">Избери категория или създай нова</option>
           {categories.map(cat => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
