@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
 import RecipeModal from '../components/RecipeModal';
@@ -11,20 +11,25 @@ function normalizeCategory(cat) {
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [filters, setFilters] = useState({ search: '', category: '', ingredient: '' });
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
-  const formWrapperRef = useRef(null); // ✅ реф за скрол
-
   useEffect(() => {
     fetchRecipes()
-      .then(data => setRecipes(data))
+      .then(data => {
+        setRecipes(data);
+        // Инициализиране на списъка с категории
+        const cats = Array.from(new Set(data.map(r => normalizeCategory(r.category)).filter(Boolean))).sort();
+        setCategories(cats);
+      })
       .catch(err => {
         console.error(err);
         setRecipes([]);
+        setCategories([]);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -36,8 +41,15 @@ export default function Home() {
       setEditing(null);
     } else {
       setRecipes(prev => [...prev, r]);
-      setShowAdd(false);
     }
+
+    // ✅ Актуализиране на категориите веднага
+    const normalizedCategory = normalizeCategory(r.category);
+    if (normalizedCategory && !categories.includes(normalizedCategory)) {
+      setCategories(prev => [...prev, normalizedCategory].sort());
+    }
+
+    setShowAdd(false);
   };
 
   const onDelete = async (id) => {
@@ -51,26 +63,19 @@ export default function Home() {
     }
   };
 
-  // Категории без дублиране и с нормализация
-  const categories = useMemo(() => {
-    return Array.from(new Set(recipes.map(r => normalizeCategory(r.category)).filter(Boolean))).sort();
-  }, [recipes]);
-
-  // Филтрирани рецепти
-  const filteredRecipes = useMemo(() => {
-    return recipes.filter(r => {
-      const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
-      const categoryMatch = !filters.category || normalizeCategory(r.category) === filters.category;
-      const ingredientFilters = filters.ingredient
-        .split(',')
-        .map(i => i.trim().toLowerCase())
-        .filter(Boolean);
-      const ingredientMatch = ingredientFilters.every(f =>
-        r.ingredients?.some(i => i.toLowerCase().includes(f))
-      );
-      return nameMatch && categoryMatch && ingredientMatch;
-    });
-  }, [recipes, filters]);
+  const filteredRecipes = recipes.filter(r => {
+    const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
+    const categoryMatch = !filters.category ||
+      (normalizeCategory(r.category) === filters.category);
+    const ingredientFilters = filters.ingredient
+      .split(',')
+      .map(i => i.trim().toLowerCase())
+      .filter(Boolean);
+    const ingredientMatch = ingredientFilters.every(f =>
+      r.ingredients?.some(i => i.toLowerCase().includes(f))
+    );
+    return nameMatch && categoryMatch && ingredientMatch;
+  });
 
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
@@ -78,33 +83,33 @@ export default function Home() {
     <div>
       <h1>📖 Моите рецепти</h1>
 
-      <button id="showFormBtn" onClick={() => {
-        setShowAdd(true);
-        setEditing(null);
-        // Скрол към формата за добавяне
-        setTimeout(() => {
-          if (formWrapperRef.current) {
-            formWrapperRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }, 50);
-      }}>
+      <button id="showFormBtn" onClick={() => setShowAdd(prev => !prev)}>
         ➕ Добави нова рецепта
       </button>
 
-      {/* Форма за добавяне или редакция */}
-      {(showAdd || editing) && (
-        <div className="form-wrapper" ref={formWrapperRef}>
+      {showAdd && !editing && (
+        <div className="form-wrapper">
           <RecipeForm
-            show={showAdd || !!editing}
-            recipe={editing}
+            show={showAdd}
             categories={categories}
             onSaved={onSaved}
-            onCancel={() => { setShowAdd(false); setEditing(null); }}
+            onCancel={() => setShowAdd(false)}
           />
         </div>
       )}
 
-      {/* Филтри */}
+      {editing && (
+        <div className="form-wrapper">
+          <RecipeForm
+            show={!!editing}
+            recipe={editing}
+            categories={categories}
+            onSaved={onSaved}
+            onCancel={() => setEditing(null)}
+          />
+        </div>
+      )}
+
       <div className="filters-container">
         <h2>Търси по</h2>
 
@@ -140,7 +145,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Списък с рецепти */}
       {loading ? <p>Зареждане...</p> : (
         <div id="recipeList">
           {filteredRecipes.length === 0 ? (
@@ -163,22 +167,13 @@ export default function Home() {
         </div>
       )}
 
-      {/* Модал за детайли */}
       {selectedRecipe && (
         <RecipeModal
           recipe={selectedRecipe}
           onClose={() => setSelectedRecipe(null)}
           onEdit={() => {
             setEditing(selectedRecipe);
-            setShowAdd(false);
             setSelectedRecipe(null);
-
-            // Скролваме формата за редакция във видимата част на екрана
-            setTimeout(() => {
-              if (formWrapperRef.current) {
-                formWrapperRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }
-            }, 50);
           }}
           onDelete={() => onDelete(selectedRecipe.id)}
         />
