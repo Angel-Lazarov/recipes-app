@@ -18,13 +18,19 @@ export default function Home() {
   const [filters, setFilters] = useState({ search: '', category: '', ingredient: '' });
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
+  // Функция за обновяване на списъка с категории
+  const updateCategories = (recipesList) => {
+    const cats = Array.from(
+      new Set(recipesList.map(r => normalizeCategory(r.category)).filter(Boolean))
+    ).sort();
+    setCategories(cats);
+  };
+
   useEffect(() => {
     fetchRecipes()
       .then(data => {
         setRecipes(data);
-        // Инициализиране на списъка с категории
-        const cats = Array.from(new Set(data.map(r => normalizeCategory(r.category)).filter(Boolean))).sort();
-        setCategories(cats);
+        updateCategories(data);
       })
       .catch(err => {
         console.error(err);
@@ -36,26 +42,26 @@ export default function Home() {
 
   const onSaved = (r) => {
     const exists = recipes.find(p => p.id === r.id);
+    let updatedRecipes;
     if (exists) {
-      setRecipes(prev => prev.map(p => p.id === r.id ? r : p));
+      updatedRecipes = recipes.map(p => p.id === r.id ? r : p);
       setEditing(null);
     } else {
-      setRecipes(prev => [...prev, r]);
+      updatedRecipes = [...recipes, r];
+      setShowAdd(false);
     }
+    setRecipes(updatedRecipes);
 
-    // ✅ Актуализиране на категориите веднага
-    const normalizedCategory = normalizeCategory(r.category);
-    if (normalizedCategory && !categories.includes(normalizedCategory)) {
-      setCategories(prev => [...prev, normalizedCategory].sort());
-    }
-
-    setShowAdd(false);
+    // Обновяване на категориите
+    updateCategories(updatedRecipes);
   };
 
   const onDelete = async (id) => {
     try {
       await deleteRecipe(id);
-      setRecipes(prev => prev.filter(p => p.id !== id));
+      const updatedRecipes = recipes.filter(p => p.id !== id);
+      setRecipes(updatedRecipes);
+      updateCategories(updatedRecipes);
       if (selectedRecipe?.id === id) setSelectedRecipe(null);
     } catch (err) {
       console.error(err);
@@ -65,8 +71,7 @@ export default function Home() {
 
   const filteredRecipes = recipes.filter(r => {
     const nameMatch = r.title.toLowerCase().includes(filters.search.toLowerCase());
-    const categoryMatch = !filters.category ||
-      (normalizeCategory(r.category) === filters.category);
+    const categoryMatch = !filters.category || (normalizeCategory(r.category) === filters.category);
     const ingredientFilters = filters.ingredient
       .split(',')
       .map(i => i.trim().toLowerCase())
