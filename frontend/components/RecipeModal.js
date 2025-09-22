@@ -12,8 +12,12 @@ export default function RecipeModal({ recipe, onClose, onEdit, onDelete }) {
         <p><strong>Категория:</strong> {recipe.category}</p>
         <img src={recipe.imageUrl || DEFAULT_IMAGE} alt={recipe.title} />
         <p><strong>Съставки:</strong> {recipe.ingredients?.join(', ')}</p>
-        <p><strong>Стъпки:</strong></p>
-        <pre>{recipe.steps?.join('\n')}</pre>
+
+        <p><strong>Стъпки:</strong> {recipe.steps?.join('\n')}</p>
+
+        {/* <p><strong>Стъпки:</strong></p>
+        <pre>{recipe.steps?.join('\n')}</pre> */}
+
         <div className="modal-buttons">
           <button onClick={() => onDelete(recipe.id)}>🗑️ Изтрий</button>
           <button onClick={() => onEdit(recipe)}>✏️ Редактирай</button>
