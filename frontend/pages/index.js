@@ -161,7 +161,8 @@ export default function Home() {
           recipe={selectedRecipe}
           onClose={() => setSelectedRecipe(null)}
           onEdit={() => {
-            setEditing(selectedRecipe);
+            setEditing(null); // принудително премахваме текущото editing
+            setTimeout(() => setEditing(selectedRecipe), 0); // задаваме новата рецепта за редакция
             setShowAdd(false);
             setSelectedRecipe(null);
           }}
