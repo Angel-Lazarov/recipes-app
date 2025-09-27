@@ -13,12 +13,12 @@ export default function Footer() {
       width: '100%',
       textAlign: 'center',
       padding: '15px 0',
-      backgroundColor: '#f9f9f9',
+      backgroundColor: '#efe6dc',
       borderTop: '1px solid #ccc',
       fontSize: '0.9rem',
       color: '#555'
     }}>
-      © {displayYear} {author}. Направено с много търпение и псувни!
+      © {displayYear} от {author}. Направено с много търпение и псувни!
     </footer>
   );
 }
