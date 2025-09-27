@@ -235,7 +235,8 @@ p.error {
 .filters-container h2 {
     width: 100%;
     text-align: center;
-    margin: 0 0 10px 0;
+    /* margin: 0 0 10px 0; */
+    margin: 0;
     font-weight: bold;
     color: #7a5f45;
 }
