@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { fetchRecipes, deleteRecipe } from '../utils/api';
 import RecipeForm from '../components/RecipeForm';
 import RecipeModal from '../components/RecipeModal';
+import Footer from '../components/Footer';
+
 
 function normalizeCategory(cat) {
   if (!cat) return '';
@@ -104,103 +106,107 @@ export default function Home() {
   const DEFAULT_IMAGE = 'https://placehold.co/300x200/cccccc/ffffff?text=Без+снимка';
 
   return (
-    <>
-      <div className="main-container">
-        <h1>📖 Моите рецепти</h1>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <main style={{ flex: 1 }}>
+        <div className="main-container">
+          <h1>📖 Моите рецепти</h1>
 
-        <button id="showFormBtn" onClick={() => {
-          setShowAdd(prev => !prev);
-          setEditing(null);
-        }}>
-          ➕ Добави нова рецепта
-        </button>
+          <button id="showFormBtn" onClick={() => {
+            setShowAdd(prev => !prev);
+            setEditing(null);
+          }}>
+            ➕ Добави нова рецепта
+          </button>
 
-        {(showAdd || editing) && (
-          <div className="form-wrapper" ref={formRef}>
-            <RecipeForm
-              show={!!(showAdd || editing)}
-              recipe={editing}
-              categories={categories}
-              onSaved={onSaved}
-              onCancel={() => {
-                setShowAdd(false);
-                setEditing(null);
-              }}
-            />
+          {(showAdd || editing) && (
+            <div className="form-wrapper" ref={formRef}>
+              <RecipeForm
+                show={!!(showAdd || editing)}
+                recipe={editing}
+                categories={categories}
+                onSaved={onSaved}
+                onCancel={() => {
+                  setShowAdd(false);
+                  setEditing(null);
+                }}
+              />
+            </div>
+          )}
+
+          <div className="filters-container">
+            <h2>Търси по</h2>
+
+            <div className="filter-item">
+              <label>Име</label>
+              <input
+                placeholder="Супа от зеленчуци"
+                value={filters.search}
+                onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
+              />
+            </div>
+
+            <div className="filter-item">
+              <label>Категория</label>
+              <select
+                value={filters.category}
+                onChange={e => setFilters(prev => ({ ...prev, category: e.target.value }))}
+              >
+                <option value="">Всички категории</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-item">
+              <label>Съставки</label>
+              <input
+                placeholder="захар, брашно, яйца"
+                value={filters.ingredient}
+                onChange={e => setFilters(prev => ({ ...prev, ingredient: e.target.value }))}
+              />
+            </div>
           </div>
-        )}
 
-        <div className="filters-container">
-          <h2>Търси по</h2>
+          {loading ? <p>Зареждане...</p> : (
+            <div id="recipeList">
+              {filteredRecipes.length === 0 ? (
+                <p>Няма намерени рецепти</p>
+              ) : (
+                filteredRecipes.map(r => (
+                  <div
+                    className="recipe"
+                    key={r.id}
+                    onClick={() => setSelectedRecipe(r)}
+                  >
+                    <h3>{r.title}</h3>
+                    <p><strong>Категория:</strong> {normalizeCategory(r.category)}</p>
+                    <img src={r.imageUrl || DEFAULT_IMAGE} alt={r.title} />
+                    <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
+                    <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
 
-          <div className="filter-item">
-            <label>Име</label>
-            <input
-              placeholder="Супа от зеленчуци"
-              value={filters.search}
-              onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
-            />
-          </div>
-
-          <div className="filter-item">
-            <label>Категория</label>
-            <select
-              value={filters.category}
-              onChange={e => setFilters(prev => ({ ...prev, category: e.target.value }))}
-            >
-              <option value="">Всички категории</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-item">
-            <label>Съставки</label>
-            <input
-              placeholder="захар, брашно, яйца"
-              value={filters.ingredient}
-              onChange={e => setFilters(prev => ({ ...prev, ingredient: e.target.value }))}
-            />
-          </div>
+          {selectedRecipe && (
+            <div ref={modalRef}>
+              <RecipeModal
+                recipe={selectedRecipe}
+                onClose={() => setSelectedRecipe(null)}
+                onEdit={() => {
+                  setEditing(selectedRecipe);
+                  setSelectedRecipe(null);
+                }}
+                onDelete={() => onDelete(selectedRecipe.id)}
+              />
+            </div>
+          )}
         </div>
+      </main>
 
-        {loading ? <p>Зареждане...</p> : (
-          <div id="recipeList">
-            {filteredRecipes.length === 0 ? (
-              <p>Няма намерени рецепти</p>
-            ) : (
-              filteredRecipes.map(r => (
-                <div
-                  className="recipe"
-                  key={r.id}
-                  onClick={() => setSelectedRecipe(r)}
-                >
-                  <h3>{r.title}</h3>
-                  <p><strong>Категория:</strong> {normalizeCategory(r.category)}</p>
-                  <img src={r.imageUrl || DEFAULT_IMAGE} alt={r.title} />
-                  <p><strong>Съставки:</strong> {r.ingredients?.join(', ')}</p>
-                  <p><strong>Стъпки:</strong> <pre>{r.steps?.join('\n')}</pre></p>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
-
-      {selectedRecipe && (
-        <div ref={modalRef}>
-          <RecipeModal
-            recipe={selectedRecipe}
-            onClose={() => setSelectedRecipe(null)}
-            onEdit={() => {
-              setEditing(selectedRecipe);
-              setSelectedRecipe(null);
-            }}
-            onDelete={() => onDelete(selectedRecipe.id)}
-          />
-        </div>
-      )}
-    </>
+      <Footer />
+    </div>
   );
 }
