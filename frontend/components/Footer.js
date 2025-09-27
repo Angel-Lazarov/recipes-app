@@ -1,8 +1,8 @@
 // components/Footer.js
 export default function Footer() {
-  const startYear = 2022; // година на създаване
+  const startYear = 2025; // година на създаване
   const currentYear = new Date().getFullYear();
-  const author = "Твоето Име";
+  const author = "Ангел Лазаров";
 
   const displayYear = startYear === currentYear ? `${currentYear}` : `${startYear}–${currentYear}`;
 
@@ -18,7 +18,7 @@ export default function Footer() {
       fontSize: '0.9rem',
       color: '#555'
     }}>
-      © {displayYear} {author}. Всички права запазени.
+      © {displayYear} {author}. Направено с много търпение и псувни!
     </footer>
   );
 }
