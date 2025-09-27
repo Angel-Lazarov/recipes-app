@@ -328,7 +328,7 @@ p.error {
 .modal-buttons {
     display: flex;
     gap: 6px;
-    justify-content: center;
+    justify-content: space-evenly;
     margin-top: 6px;
 }
 
@@ -339,6 +339,7 @@ p.error {
     border: none;
     cursor: pointer;
     transition: background-color 0.2s;
+    flex-basis: 23%;
 }
 
 .modal-buttons button:first-of-type {
